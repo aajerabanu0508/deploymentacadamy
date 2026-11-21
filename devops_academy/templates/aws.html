@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Move to AWS? — On-Premise vs Cloud Architecture 3D Simulation | DevOps Academy</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/white_academy.css') }}">
+  <style>
+    .aws-subnav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 57px;
+      z-index: 90;
+      backdrop-filter: blur(8px);
+    }
+    .aws-subnav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      gap: 16px;
+      overflow-x: auto;
+    }
+    .aws-jump-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .aws-jump-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .aws-jump-link:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+    .aws-jump-link.is-active {
+      background: rgba(255, 153, 0, 0.12);
+      color: #d97706;
+      border: 1px solid rgba(255, 153, 0, 0.3);
+    }
+    .aws-step-segmented {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding: 4px;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+    }
+    .aws-step-pill {
+      flex: 1;
+      text-align: center;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .aws-step-pill:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .aws-step-pill.active {
+      background: #ff9900;
+      color: #0f172a;
+      box-shadow: 0 0 12px rgba(255, 153, 0, 0.6);
+      font-weight: 700;
+    }
+    .slide-bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #334155;
+      background: #f8fafc;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border-left: 3px solid #cbd5e1;
+    }
+    .slide-bullet-item.onprem {
+      border-left-color: #ef4444;
+      background: #fffafb;
+    }
+    .slide-bullet-item.aws {
+      border-left-color: #ff9900;
+      background: #fffdf5;
+    }
+    .bullet-icon {
+      font-size: 13px;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    @media (max-width: 860px) {
+      .matrix-grid { grid-template-columns: 1fr; }
+    }
+    .matrix-card {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .matrix-card.on-prem {
+      border-top: 4px solid #ef4444;
+    }
+    .matrix-card.aws-cloud {
+      border-top: 4px solid #ff9900;
+    }
+    .calc-slider-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    /* Floating Navigation Arrows on Viewport */
+    .vp-nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 26px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 25;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+      user-select: none;
+    }
+    .vp-nav-arrow:hover {
+      background: #ff9900;
+      color: #0f172a;
+      border-color: #ff9900;
+      transform: translateY(-50%) scale(1.12);
+      box-shadow: 0 0 20px rgba(255, 153, 0, 0.7);
+    }
+    .vp-nav-arrow:disabled {
+      opacity: 0.2;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .vp-nav-arrow.left { left: 16px; }
+    .vp-nav-arrow.right { right: 16px; }
+
+    /* Floating Viewport Progress Bar */
+    .vp-progress-bar-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 20;
+    }
+    .vp-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #ff9900);
+      width: 7.14%;
+      transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Synchronized Content Auto-Adjustment & Morph Transitions */
+    .studio-sidebar {
+      max-height: 720px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+      padding-right: 4px;
+      scroll-behavior: smooth;
+    }
+    .slide-morph-anim {
+      animation: slideMorphIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideMorphIn {
+      0% {
+        opacity: 0.25;
+        transform: translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="tech-dot-bg"></div>
+
+  <!-- Top Sticky Header -->
+  <header class="site-header">
+    <div class="layout-container header-inner">
+      <a href="/" class="brand-anchor">
+        <div class="brand-icon-box" style="background:#ff9900;color:#0f172a;">☁️</div>
+        <span class="brand-name">DevOps Academy</span>
+        <span class="brand-release">v2.4</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="/" class="nav-item">← Academy Home</a>
+        <a href="/docker" class="nav-item">🐳 Docker Engine</a>
+        <a href="/cicd-cinematic" class="nav-item">CI/CD Pipeline</a>
+        <a href="/learn/kubernetes" class="nav-item">Kubernetes</a>
+        <a href="/aws" class="nav-item is-active" style="color:#d97706;font-weight:700;">☁️ AWS Cloud</a>
+        <button class="status-pill-btn" id="btn-backend-health">
+          <span class="status-dot"></span>
+          <span>AWS Region: us-east-1</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sticky AWS Section Navigation -->
+  <div class="aws-subnav">
+    <div class="layout-container aws-subnav-inner">
+      <div class="aws-jump-links">
+        <span style="font-size:12px;font-weight:700;color:var(--text-primary);margin-right:6px;">AWS CURRICULUM:</span>
+        <a href="#matrix" class="aws-jump-link">1. Why Move to AWS?</a>
+        <a href="#aws-3d-section" class="aws-jump-link is-active">2. 3D Spatial Dock: 14 Stages (7 On-Prem vs 7 AWS)</a>
+        <a href="#calculator" class="aws-jump-link">3. CapEx vs OpEx Calculator</a>
+        <a href="#workflow" class="aws-jump-link">4. Production AWS CLI Workflow</a>
+        <a href="#evaluation" class="aws-jump-link">5. Knowledge Check</a>
+      </div>
+      <div>
+        <a href="/" class="btn-solid" style="font-size:12px;padding:6px 14px;background:#0f172a;">
+          Full Curriculum Overview →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <main class="layout-container">
+    <!-- Hero Header -->
+    <section class="hero-wrapper" style="padding-bottom:24px;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255, 153, 0, 0.12);border:1px solid rgba(255, 153, 0, 0.3);color:#d97706;font-size:11px;font-weight:700;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;padding:4px 10px;border-radius:6px;margin-bottom:14px;">
+        <span>☁️ MODULE 04 · CLOUD MIGRATION & HIGH AVAILABILITY</span>
+      </div>
+      <h1 class="hero-heading">
+        Why Move from On-Premise to AWS Cloud?
+      </h1>
+      <p class="hero-subtitle">
+        Understand why enterprises abandon physical bare-metal server rooms. Explore the technical, financial, and architectural reasons to migrate to AWS: from eliminating single points of failure to automated multi-AZ elasticity.
+      </p>
+
+      <!-- Quick Metrics Bar -->
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:20px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span style="color:#ef4444;">●</span> On-Premise CapEx Lock-In & Bottlenecks
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span style="color:#ff9900;">●</span> AWS Multi-AZ High Availability (99.99%)
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span style="color:#10b981;">●</span> Elastic Auto-Scaling (Pay per second)
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span style="color:#0284c7;">●</span> Managed RDS Sync Replication & Failover
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 1: THE ARCHITECTURAL MATRIX (ON-PREM VS AWS)
+         ================================================================ -->
+    <section class="module-section" id="matrix">
+      <div class="module-header">
+        <div class="section-label" style="background:#fee2e2;border-color:#fecaca;color:#dc2626;">
+          <span>THE CORE TRADE-OFF</span>
+        </div>
+        <h2 class="module-title">1. Why No On-Premise? The 5 Fatal Engineering Bottlenecks</h2>
+        <p class="module-desc">
+          Managing physical bare-metal servers creates massive operational friction that slows engineering teams down and bankrupts budgets during unexpected traffic swings.
+        </p>
+      </div>
+
+      <div class="matrix-grid">
+        <!-- On-Premise Card -->
+        <div class="matrix-card on-prem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:11px;font-family:var(--font-mono);font-weight:700;color:#ef4444;background:#fee2e2;padding:3px 8px;border-radius:4px;">
+              LEGACY ARCHITECTURE
+            </span>
+            <span style="font-size:12px;color:var(--text-muted);">Physical Bare-Metal</span>
+          </div>
+          <h3 style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:8px;">
+            🏢 Physical On-Premise Server Room
+          </h3>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;">
+            Your company buys, racks, powers, and cools physical servers inside an on-site server closet or leased colocation data center cage.
+          </p>
+
+          <table class="spec-rules-table">
+            <tbody>
+              <tr>
+                <td class="col-prop">Financial Model</td>
+                <td class="col-val" style="color:#dc2626;font-weight:600;">Heavy CapEx ($60,000+ upfront per rack)</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Procurement Lead Time</td>
+                <td class="col-val">8 to 12 weeks for delivery, racking & cabling</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Scalability Model</td>
+                <td class="col-val" style="color:#dc2626;">Hard capacity ceiling (traffic spikes crash servers)</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Fault Tolerance</td>
+                <td class="col-val">Single Point of Failure (power outage, cut fiber)</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Disaster Recovery</td>
+                <td class="col-val">Manual tape backups or expensive secondary cage</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Maintenance Burden</td>
+                <td class="col-val">Staff must replace failed disks, PSUs & fans</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- AWS Cloud Card -->
+        <div class="matrix-card aws-cloud">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:11px;font-family:var(--font-mono);font-weight:700;color:#d97706;background:#fef3c7;padding:3px 8px;border-radius:4px;">
+              CLOUD-NATIVE STANDARD
+            </span>
+            <span style="font-size:12px;color:var(--text-muted);">Multi-AZ Virtualized Infrastructure</span>
+          </div>
+          <h3 style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:8px;">
+            ☁️ AWS Cloud Global Infrastructure
+          </h3>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;">
+            API-driven, elastic computing spread across geographically separated Availability Zones connected by private redundant optical links.
+          </p>
+
+          <table class="spec-rules-table">
+            <tbody>
+              <tr>
+                <td class="col-prop">Financial Model</td>
+                <td class="col-val" style="color:#059669;font-weight:600;">100% OpEx (Pay-per-second, zero upfront cost)</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Provisioning Speed</td>
+                <td class="col-val" style="color:#059669;font-weight:600;">15 to 30 seconds via Terraform or AWS CLI</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Elastic Scalability</td>
+                <td class="col-val" style="color:#059669;">Auto-scales from 2 to 200+ instances automatically</td>
+              </tr>
+              <tr>
+                <td class="col-prop">High Availability</td>
+                <td class="col-val">Multi-AZ (physically isolated data centers miles apart)</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Database Reliability</td>
+                <td class="col-val">RDS Multi-AZ synchronous replication & 60s failover</td>
+              </tr>
+              <tr>
+                <td class="col-prop">Hardware Maintenance</td>
+                <td class="col-val">Zero (AWS handles all physical hardware & hypervisors)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 2: 3D SPATIAL ARCHITECTURE & MIGRATION DOCK
+         ================================================================ -->
+    <section class="module-section" id="aws-3d-section">
+      <div class="module-header">
+        <div class="section-label">
+          <span>INTERACTIVE 3D SPATIAL SIMULATION</span>
+        </div>
+        <h2 class="module-title">2. Spatial 3D Comparison: On-Premise Overload vs AWS Multi-AZ</h2>
+        <p class="module-desc">
+          Compare the physical on-premise rack on the left against the multi-AZ AWS Cloud VPC on the right. Trigger live traffic spikes or simulate physical availability zone outages to witness automated self-healing.
+        </p>
+      </div>
+
+      <div class="studio-layout-grid">
+        <!-- 3D Viewport Box -->
+        <div class="viewport-frame">
+          <div class="viewport-topbar">
+            <div class="vp-title-text">
+              <span style="font-size:16px;">☁️</span>
+              <span>AWS Cloud Architecture & Migration Viewport</span>
+              <span class="brand-release" style="background:#1e293b;color:#ff9900;border:1px solid #334155;">WebGL 3D</span>
+            </div>
+            <div class="vp-actions-group">
+              <button class="btn-vp-tool" id="btn-aws-cinema" title="Toggle wide cinema perspective">
+                ⛶ Cinema View
+              </button>
+              <button class="btn-vp-tool" id="btn-aws-zoom-out" title="Zoom Out to see wider environment">
+                🔍− Zoom Out
+              </button>
+              <button class="btn-vp-tool" id="btn-aws-zoom-in" title="Zoom In for closer inspection">
+                🔍+ Zoom In
+              </button>
+              <button class="btn-vp-tool" id="btn-aws-reset-cam" title="Reset Camera to Stage Default">
+                🎯 Reset View
+              </button>
+              <button class="btn-vp-tool" id="btn-spike-traffic" style="color:#f59e0b;" title="Simulate 10,000 requests/second traffic surge">
+                ⚡ Simulate Traffic Surge (10k Req/s)
+              </button>
+              <button class="btn-vp-tool" id="btn-simulate-outage" style="color:#ef4444;" title="Simulate physical disaster in AZ-1">
+                💥 Simulate AZ-1 Disaster Outage
+              </button>
+            </div>
+          </div>
+
+          <!-- WebGL Container with On-Canvas Navigation -->
+          <div id="aws-3d-canvas-container">
+            <!-- Progress Bar along Top of Viewport -->
+            <div class="vp-progress-bar-track">
+              <div class="vp-progress-bar-fill" id="aws-progress-fill"></div>
+            </div>
+
+            <!-- Floating Viewport Left / Right Arrow Buttons -->
+            <button class="vp-nav-arrow left" id="btn-vp-arrow-prev" title="Previous Stage (ArrowLeft)" disabled>
+              ‹
+            </button>
+            <button class="vp-nav-arrow right" id="btn-vp-arrow-next" title="Next Stage (ArrowRight)">
+              ›
+            </button>
+
+            <div class="viewport-hint-overlay">
+              Left drag rotate · Scroll zoom · Click ‹ › or Arrow keys ← → to navigate
+            </div>
+          </div>
+
+          <!-- Deck Bottom Controls -->
+          <div class="viewport-bottom-deck">
+            <div class="aws-step-segmented" id="aws-step-pills"></div>
+
+            <div class="deck-buttons-row">
+              <div style="display:flex;gap:8px;">
+                <button class="btn-outline" id="btn-aws-prev" disabled>
+                  ← Previous Stage
+                </button>
+                <button class="btn-solid" id="btn-aws-next" style="background:#ff9900;color:#0f172a;border-color:#ff9900;">
+                  Next Stage →
+                </button>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-outline" id="btn-aws-auto">
+                  ▶ Auto-Play
+                </button>
+                <button class="btn-outline" id="btn-aws-reset">
+                  Reset Simulation
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Stage Details (Presentation Grade) -->
+        <aside class="studio-sidebar">
+          <!-- Main Slide Content Card -->
+          <div class="panel-card" id="aws-slide-main-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span class="panel-sub-label" id="aws-step-counter" style="color:#ff9900;margin:0;">STAGE 01/14</span>
+              <span id="aws-step-phase-pill" style="font-size:10px;font-family:var(--font-mono);font-weight:700;padding:2px 8px;border-radius:4px;background:#fef3c7;color:#d97706;border:1px solid rgba(217,119,6,0.3);">PHASE 1: ON-PREMISES</span>
+            </div>
+            <h3 class="panel-main-title" id="aws-step-title" style="font-size:17px;line-height:1.35;margin-bottom:8px;">Physical Hardware Procurement &amp; Delivery Delays</h3>
+            <div class="panel-cmd-chip" id="aws-step-subtitle" style="font-size:12px;color:#334155;background:#f1f5f9;padding:5px 9px;border-radius:4px;margin-bottom:12px;font-family:var(--font-mono);">CapEx PO approval &amp; 8-12 weeks lead time</div>
+            <p class="panel-body-text" id="aws-step-explanation" style="font-size:13px;line-height:1.55;color:#475569;margin-bottom:14px;">
+              Building on-premises begins with massive upfront Capital Expenditure (CapEx). Engineering teams draft capacity forecasts 6 months in advance, submit vendor POs ($120k+ per rack), and wait 8 to 12 weeks for physical servers to arrive.
+            </p>
+
+            <!-- Key Presentation Takeaways (3 Bullet Points) -->
+            <div style="border-top:1px solid #e2e8f0;padding-top:12px;margin-bottom:14px;">
+              <div style="font-size:11px;font-family:var(--font-mono);font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px;">
+                Key Presentation Takeaways
+              </div>
+              <div id="aws-step-bullets" style="display:flex;flex-direction:column;gap:6px;">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+
+            <!-- Terminal / IaC Snippet -->
+            <div style="border-top:1px solid #e2e8f0;padding-top:12px;">
+              <div style="font-size:11px;font-family:var(--font-mono);font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px;">
+                Execution Command / IaC Snippet
+              </div>
+              <div id="aws-step-cmd" style="font-family:var(--font-mono);font-size:11px;background:#0f172a;color:#38bdf8;padding:8px 12px;border-radius:6px;overflow-x:auto;white-space:nowrap;">
+                $ cat vendor_po_dell.json | jq '.status'
+              </div>
+            </div>
+          </div>
+
+          <!-- Presenter Talking Point / Punchline Card -->
+          <div class="panel-card" style="border-left:4px solid #8b5cf6;background:#faf5ff;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--font-mono);font-weight:800;color:#7c3aed;text-transform:uppercase;margin-bottom:6px;">
+              <span>🎤</span>
+              <span>Presenter Talking Point</span>
+            </div>
+            <p id="aws-step-presenter-note" style="font-size:12.5px;color:#4c1d95;font-weight:500;line-height:1.55;margin:0;">
+              "On-premise deployment starts not with code, but with purchase orders and 3-month shipping delays. If your traffic spikes next week, you are out of luck."
+            </p>
+          </div>
+
+          <!-- Interactive Failover & Metric Telemetry -->
+          <div class="panel-card" style="border-left:4px solid #ff9900;">
+            <div style="font-size:11px;font-family:var(--font-mono);font-weight:700;color:#d97706;text-transform:uppercase;margin-bottom:8px;">
+              Live Infrastructure Telemetry
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;justify-content:space-between;gap:8px;">
+                <span style="color:#64748b;">On-Prem Status:</span>
+                <span id="tel-onprem" style="font-family:var(--font-mono);font-weight:700;color:#ef4444;text-align:right;">PO Approved ($120k CapEx)</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:8px;">
+                <span style="color:#64748b;">AWS Cloud Ingress:</span>
+                <span id="tel-vpc" style="font-family:var(--font-mono);color:#38bdf8;text-align:right;">N/A (Pre-Cloud Phase)</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:8px;">
+                <span style="color:#64748b;">Availability Zones:</span>
+                <span id="tel-az" style="font-family:var(--font-mono);color:#10b981;text-align:right;">0 Zones (Single Facility)</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:8px;">
+                <span style="color:#64748b;">Database Durability:</span>
+                <span id="tel-db" style="font-family:var(--font-mono);color:#60a5fa;text-align:right;">Single Server (No Sync)</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 3: CAPEX VS OPEX COST & DOWNTIME CALCULATOR
+         ================================================================ -->
+    <section class="module-section" id="calculator">
+      <div class="module-header">
+        <div class="section-label" style="background:#ecfdf5;border-color:#d1fae5;color:#059669;">
+          <span>FINANCIAL IMPACT</span>
+        </div>
+        <h2 class="module-title">3. Interactive CapEx vs OpEx Cost Calculator</h2>
+        <p class="module-desc">
+          Drag the traffic slider to see how server procurement, cooling, and catastrophic outage downtime costs compare between on-premise hardware and AWS elasticity.
+        </p>
+      </div>
+
+      <div class="calc-slider-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--text-primary);">
+              Simulate Monthly Active Traffic & Traffic Surge Multiplier
+            </div>
+            <div style="font-size:13px;color:var(--text-muted);">
+              Adjust to evaluate cost scaling and downtime impact during peak holiday traffic.
+            </div>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:18px;font-weight:800;color:#0284c7;" id="traffic-display">
+            2,500,000 Req / Month (2x Peak)
+          </div>
+        </div>
+
+        <input type="range" id="traffic-slider" min="500000" max="10000000" step="500000" value="2500000" style="width:100%;margin-bottom:24px;cursor:pointer;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <!-- On Prem Cost -->
+          <div style="background:#fff;border:1px solid var(--border-light);border-radius:8px;padding:18px;border-top:3px solid #ef4444;">
+            <div style="font-size:12px;font-weight:700;color:#ef4444;font-family:var(--font-mono);margin-bottom:4px;">
+              ON-PREMISE TOTAL ANNUAL COST
+            </div>
+            <div style="font-size:28px;font-weight:800;color:var(--text-primary);margin-bottom:10px;" id="cost-onprem">
+              $94,500 / yr
+            </div>
+            <ul style="font-size:12px;color:var(--text-secondary);line-height:1.7;padding-left:16px;">
+              <li>Hardware Procurement CapEx: $45,000 upfront</li>
+              <li>Data Center Power, HVAC Cooling & Bandwidth: $2,500 / mo</li>
+              <li>Overprovisioned waste: 75% idle server capacity during off-peak</li>
+              <li style="color:#dc2626;font-weight:600;">Outage Downtime Risk: 4.5 hours/yr ($28,000 lost)</li>
+            </ul>
+          </div>
+
+          <!-- AWS Cost -->
+          <div style="background:#fff;border:1px solid var(--border-light);border-radius:8px;padding:18px;border-top:3px solid #ff9900;">
+            <div style="font-size:12px;font-weight:700;color:#d97706;font-family:var(--font-mono);margin-bottom:4px;">
+              AWS CLOUD TOTAL ANNUAL COST
+            </div>
+            <div style="font-size:28px;font-weight:800;color:#059669;margin-bottom:10px;" id="cost-aws">
+              $18,400 / yr
+            </div>
+            <ul style="font-size:12px;color:var(--text-secondary);line-height:1.7;padding-left:16px;">
+              <li>Upfront CapEx: $0 (pay only for active seconds)</li>
+              <li>Auto-scaling: scales down to baseline off-peak ($0 waste)</li>
+              <li>Multi-AZ High Availability: 99.99% SLA</li>
+              <li style="color:#059669;font-weight:600;">Net Savings: $76,100 / yr + 10x faster deployment</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 4: PRODUCTION AWS WORKFLOW
+         ================================================================ -->
+    <section class="module-section" id="workflow">
+      <div class="module-header">
+        <div class="section-label">
+          <span>STEP-BY-STEP DEPLOYMENT</span>
+        </div>
+        <h2 class="module-title">4. Production AWS Migration Workflow (CLI & IaC)</h2>
+        <p class="module-desc">
+          How real engineering teams migrate software from local Docker environments to AWS production clusters.
+        </p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <!-- Step 1 -->
+        <div class="panel-card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:800;background:#0284c7;color:#fff;padding:2px 8px;border-radius:4px;">01</span>
+            <span style="font-weight:700;font-size:15px;color:var(--text-primary);">Publish Docker Image to Amazon ECR (Elastic Container Registry)</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+            Amazon ECR stores and encrypts immutable Docker container images across multiple availability zones.
+          </p>
+          <pre style="background:var(--bg-subtle);border:1px solid var(--border-light);padding:12px;border-radius:6px;font-size:12px;font-family:var(--font-mono);color:var(--text-primary);overflow-x:auto;">$ aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789.dkr.ecr.us-east-1.amazonaws.com
+$ docker tag myapp:v1.0.0 123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:v1.0.0
+$ docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:v1.0.0</pre>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="panel-card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:800;background:#0284c7;color:#fff;padding:2px 8px;border-radius:4px;">02</span>
+            <span style="font-weight:700;font-size:15px;color:var(--text-primary);">Configure Application Load Balancer & Target Groups</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+            ALB provides a unified public entrypoint, terminates TLS SSL certificates, and routes traffic across private subnets.
+          </p>
+          <pre style="background:var(--bg-subtle);border:1px solid var(--border-light);padding:12px;border-radius:6px;font-size:12px;font-family:var(--font-mono);color:var(--text-primary);overflow-x:auto;">$ aws elbv2 create-load-balancer --name prod-alb --subnets subnet-1a subnet-1b --security-groups sg-web
+$ aws elbv2 create-target-group --name app-targets --protocol HTTP --port 5000 --vpc-id vpc-prod --health-check-path /health</pre>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="panel-card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:800;background:#0284c7;color:#fff;padding:2px 8px;border-radius:4px;">03</span>
+            <span style="font-weight:700;font-size:15px;color:var(--text-primary);">Provision Amazon RDS Multi-AZ Database</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+            Enabling <code>--multi-az</code> creates a synchronous standby replica in a different physical facility with automated 60-second failover.
+          </p>
+          <pre style="background:var(--bg-subtle);border:1px solid var(--border-light);padding:12px;border-radius:6px;font-size:12px;font-family:var(--font-mono);color:var(--text-primary);overflow-x:auto;">$ aws rds create-db-instance \
+    --db-instance-identifier prod-postgres \
+    --db-instance-class db.t4g.medium \
+    --engine postgres \
+    --multi-az \
+    --allocated-storage 50</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SECTION 5: KNOWLEDGE CHECK
+         ================================================================ -->
+    <section class="module-section" id="evaluation">
+      <div class="module-header">
+        <div class="section-label">
+          <span>KNOWLEDGE CHECK</span>
+        </div>
+        <h2 class="module-title">5. AWS Cloud Mastery Assessment</h2>
+        <p class="module-desc">
+          Test your understanding of Availability Zones, CapEx vs OpEx, and load balancing.
+        </p>
+      </div>
+
+      <div class="quiz-grid">
+        <div class="quiz-box">
+          <div class="quiz-stem">
+            1. What physically distinguishes an AWS Availability Zone (AZ) from a traditional server rack?
+          </div>
+          <div class="quiz-choices">
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">
+              A. An AZ is just a software folder on a single server
+            </button>
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, true)">
+              B. An AZ is one or more physically isolated data centers with independent power, cooling, and fiber, separated by kilometers
+            </button>
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">
+              C. An AZ only runs Linux containers, not databases
+            </button>
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">
+              D. All AZs share the same local power grid and city water supply
+            </button>
+          </div>
+          <div class="quiz-solution-expl">
+            <strong>Correct!</strong> Each Availability Zone consists of one or more discrete data centers with independent redundant power grids, cooling, and connectivity to ensure physical isolation from disasters.
+          </div>
+        </div>
+
+        <div class="quiz-box">
+          <div class="quiz-stem">
+            2. When web traffic surges during a flash sale, how does AWS Auto Scaling protect the application?
+          </div>
+          <div class="quiz-choices">
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">
+              A. It orders new physical server racks from Dell via expedited delivery
+            </button>
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">
+              B. It slows down users' internet connections to prevent load
+            </button>
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, true)">
+              C. It dynamically provisions additional EC2/ECS container instances in seconds and registers them with the ALB
+            </button>
+            <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">
+              D. It shuts down the database to protect CPU cycles
+            </button>
+          </div>
+          <div class="quiz-solution-expl">
+            <strong>Correct!</strong> CloudWatch monitors target metrics (e.g. CPU > 70% or request count) and triggers the Auto Scaling Group to spawn new compute nodes dynamically across Availability Zones, scaling back down when traffic subsides.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="layout-container footer-inner">
+      <div>
+        <div style="font-weight:700;color:var(--text-primary);font-size:14px;">DevOps Technical Academy</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Module 4: AWS Cloud & Multi-AZ Infrastructure</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">
+        DevOps Academy · AWS Cloud
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/three.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/OrbitControls.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/aws3d.js') }}"></script>
+
+  <script>
+    // CapEx vs OpEx Slider
+    const slider = document.getElementById('traffic-slider');
+    const trafficDisplay = document.getElementById('traffic-display');
+    const costOnPrem = document.getElementById('cost-onprem');
+    const costAws = document.getElementById('cost-aws');
+
+    if (slider) {
+      slider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        const millions = (val / 1000000).toFixed(1);
+        const peakMult = val > 5000000 ? '4x Peak' : '2x Peak';
+        if (trafficDisplay) trafficDisplay.textContent = `${millions}M Req / Month (${peakMult})`;
+
+        // Formulas
+        const onPremVal = Math.round(45000 + (val / 100000) * 1200 + (val > 4000000 ? 35000 : 15000));
+        const awsVal = Math.round((val / 1000000) * 4200 + 3600);
+
+        if (costOnPrem) costOnPrem.textContent = `$${onPremVal.toLocaleString()} / yr`;
+        if (costAws) costAws.textContent = `$${awsVal.toLocaleString()} / yr`;
+      });
+    }
+
+    function checkQuiz(btn, isCorrect) {
+      const card = btn.closest('.quiz-box');
+      const allBtns = card.querySelectorAll('.quiz-choice-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+          if (b.getAttribute('onclick').includes('true')) {
+            b.classList.add('correct');
+          }
+        });
+      }
+      const expl = card.querySelector('.quiz-solution-expl');
+      if (expl) expl.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

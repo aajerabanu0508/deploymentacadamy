@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CI/CD Cinematic Journey | DevOps Academy</title>
+<style>
+/* ================================================================ RESET */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04091a;--cyan:#22d3ee;--purple:#818cf8;--green:#4ade80;
+  --yellow:#facc15;--red:#f87171;--orange:#fb923c;--skin:#f5c27a;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
+  font-family:'Segoe UI',system-ui,sans-serif;color:#fff;user-select:none}
+
+/* ================================================================ STARFIELD */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.grid-floor{
+  position:fixed;bottom:72px;left:50%;
+  transform:translateX(-50%) rotateX(72deg);
+  width:900px;height:380px;
+  background-image:linear-gradient(#22d3ee0d 1px,transparent 1px),
+    linear-gradient(90deg,#22d3ee0d 1px,transparent 1px);
+  background-size:50px 50px;pointer-events:none;z-index:0;
+}
+
+/* ================================================================ SCENE SYSTEM */
+.stage{position:fixed;inset:0;z-index:1;perspective:1100px}
+.scene{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transform:scale(.94) translateZ(-55px);
+  transition:opacity .6s ease,transform .6s ease;
+}
+.scene.active{opacity:1;transform:scale(1) translateZ(0);pointer-events:all}
+.scene.exit{opacity:0;transform:scale(1.06) translateZ(55px);transition:opacity .45s,transform .45s}
+.eyebrow{
+  position:absolute;top:26px;left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:4px;color:var(--cyan);font-weight:800;
+  text-transform:uppercase;opacity:.75;white-space:nowrap;
+}
+
+/* ================================================================ TYPE */
+.grad{
+  background:linear-gradient(90deg,var(--cyan),var(--purple),var(--cyan));
+  background-size:200% auto;-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{to{background-position:200% center}}
+.lead{color:#94a3b8;line-height:1.7;font-size:14px}
+
+/* ================================================================ LAYOUT */
+.row{display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap;padding:20px;max-width:1040px;width:100%}
+.col{display:flex;flex-direction:column;align-items:center;gap:16px}
+.stext{max-width:380px}
+.stext h2{font-size:clamp(22px,3vw,36px);font-weight:800;line-height:1.2;margin-bottom:12px}
+.float{animation:fl 2.8s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-12px)}}
+
+/* ================================================================ AVATAR */
+.a-head{width:46px;height:46px;border-radius:50%;background:var(--skin);margin:0 auto;position:relative;box-shadow:inset -4px 4px 10px #0003}
+.a-head::before{content:'';position:absolute;top:-8px;left:-3px;right:-3px;height:24px;background:#1e1b4b;border-radius:50% 50% 0 0}
+.a-eyes{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:14px;line-height:1}
+.a-smile{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:16px;height:8px;border-bottom:3px solid #c27b40;border-radius:0 0 10px 10px}
+.a-body{width:46px;height:38px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:10px 10px 4px 4px;position:relative;margin-top:2px}
+.a-arm{position:absolute;width:13px;height:30px;background:#2563eb;border-radius:6px;top:4px;transform-origin:top center}
+.a-arm.l{left:-11px}.a-arm.r{right:-11px}
+.a-legs{display:flex;justify-content:center;gap:6px;margin-top:3px}
+.a-leg{width:15px;height:26px;background:#1e3a5f;border-radius:4px 4px 7px 7px}
+@keyframes armL{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(8deg)}}
+@keyframes armR{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-8deg)}}
+.typing .a-arm.l{animation:armL .28s ease-in-out infinite}
+.typing .a-arm.r{animation:armR .28s ease-in-out infinite}
+@keyframes celebrate{0%,100%{transform:translateY(0) rotate(0)}
+  25%{transform:translateY(-18px) rotate(-6deg)}75%{transform:translateY(-10px) rotate(6deg)}}
+
+/* ================================================================ LAPTOP */
+.laptop-screen{width:170px;height:105px;background:#080f1e;border:2px solid #334155;border-radius:8px 8px 0 0;padding:9px;overflow:hidden;position:relative}
+.laptop-base{width:180px;height:11px;background:linear-gradient(to bottom,#1e293b,#0f172a);border-radius:0 0 7px 7px}
+.cl{height:7px;border-radius:3px;margin-bottom:5px;animation:codeblink 1.2s steps(1) infinite}
+.cl.c{background:#22d3ee33}.cl.p{background:#818cf844}.cl.g{background:#4ade8044}
+.cl.s{width:55%}.cl.m{width:78%}.cl.f{width:95%}
+@keyframes codeblink{95%{opacity:.3}}
+.cursor{display:inline-block;width:7px;height:11px;background:var(--cyan);vertical-align:middle;animation:blink .7s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ================================================================ TERMINAL */
+.term{background:#030712;border:1px solid #1e293b;border-radius:10px;overflow:hidden;font-family:'Cascadia Code','Consolas',monospace;font-size:12px}
+.tbar{background:#111827;padding:8px 12px;display:flex;align-items:center;gap:5px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#ef4444}.dot.y{background:#eab308}.dot.g{background:#22c55e}
+.tname{margin-left:8px;color:#475569;font-size:11px}
+.tbody{padding:12px 14px}
+.tl{color:#94a3b8;line-height:1.9;opacity:0;animation:linein .25s forwards}
+.tl.cmd{color:#4ade80}.tl.out{color:#e2e8f0;padding-left:14px}
+.tl.ok{color:#4ade80}.tl.info{color:#22d3ee}.tl.dim{color:#475569}
+@keyframes linein{to{opacity:1}}
+
+/* ================================================================ BADGE */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.3px}
+.b-c{background:#0c4a6e44;border:1px solid #22d3ee55;color:var(--cyan)}
+.b-g{background:#14532d44;border:1px solid #4ade8055;color:var(--green)}
+.b-p{background:#1e1b4b44;border:1px solid #818cf855;color:var(--purple)}
+.b-o{background:#78350f44;border:1px solid #fb923c55;color:var(--orange)}
+.cmd-pill{display:inline-block;background:#0a1628;border:1px solid #334155;border-radius:6px;padding:5px 11px;font-family:monospace;font-size:12px;color:var(--green);margin-top:10px}
+
+/* ================================================================ PIPELINE */
+.prow{display:flex;align-items:flex-start;gap:0;flex-wrap:wrap;justify-content:center;padding:10px}
+.pnode{display:flex;flex-direction:column;align-items:center;gap:7px}
+.picon{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:27px;border:2px solid #ffffff18;background:#ffffff08;transition:all .4s}
+.picon.glow{border-color:var(--cyan);background:#22d3ee1a;box-shadow:0 0 28px #22d3ee55;transform:scale(1.18);animation:ipulse 1s ease-in-out infinite}
+.picon.done{border-color:var(--green);background:#4ade801a;box-shadow:0 0 20px #4ade8044}
+@keyframes ipulse{50%{box-shadow:0 0 44px #22d3ee88;transform:scale(1.22)}}
+.plbl{font-size:10px;color:#475569;text-align:center;font-weight:700;max-width:62px}
+.plbl.on{color:var(--cyan)}.plbl.dn{color:var(--green)}
+.parr{width:36px;height:2px;background:#ffffff12;position:relative;align-self:flex-start;margin-top:28px;flex-shrink:0}
+.parr::after{content:'';position:absolute;right:-5px;top:-4px;border:5px solid transparent;border-left:7px solid #ffffff12}
+.parr.lit::before{content:'';position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));animation:afill .5s ease forwards}
+.parr.lit::after{border-left-color:var(--purple)}
+@keyframes afill{from{width:0}to{width:100%}}
+@keyframes popin{to{opacity:1}}
+
+/* ================================================================ AWS CLOUD */
+.cloud{display:flex;flex-direction:column;align-items:center;animation:fl 3s ease-in-out infinite}
+.cloud-top{display:flex;justify-content:center;align-items:flex-end}
+.cbubble{border-radius:50%;background:linear-gradient(135deg,#1e40af,#1d4ed8);border:1.5px solid #60a5fa44}
+.cb1{width:55px;height:55px}.cb2{width:80px;height:80px;margin:0 -10px;z-index:1}.cb3{width:55px;height:55px}
+.cloud-body{width:170px;height:44px;background:linear-gradient(135deg,#1e40af,#1d4ed8);border-radius:0 0 22px 22px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#93c5fd;letter-spacing:2px;box-shadow:0 12px 40px #3b82f655;border:1.5px solid #60a5fa44;border-top:0}
+.ecs-row{display:flex;gap:10px;margin-top:4px}
+.ecs-t{width:76px;height:60px;background:linear-gradient(135deg,#0f2027,#203a43);border:1.5px solid #22d3ee44;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;box-shadow:0 0 16px #22d3ee1a;opacity:0;transition:opacity .4s}
+.ecs-t.up{opacity:1}
+.led{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:ledp 1.1s ease-in-out infinite}
+@keyframes ledp{50%{opacity:.4;box-shadow:0 0 3px var(--green)}}
+
+/* ================================================================ TEST */
+.test-list{display:flex;flex-direction:column;gap:7px;min-width:300px}
+.ti{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#ffffff05;border:1px solid #4ade8030;border-radius:9px;font-size:12px;font-family:monospace;opacity:0;transform:translateX(-18px);animation:slidein .3s ease forwards}
+.ts{font-weight:800;color:var(--green);min-width:18px}
+@keyframes slidein{to{opacity:1;transform:translateX(0)}}
+
+/* ================================================================ CONFETTI */
+.cf{position:absolute;top:-20px;animation:cfall linear forwards;border-radius:2px}
+@keyframes cfall{to{transform:translateY(110vh) rotate(800deg);opacity:0}}
+
+/* ================================================================ SUCCESS CARDS */
+.scard{min-width:130px;text-align:center;padding:16px 20px;border-radius:14px;border:1px solid}
+.scard.g{background:#14532d30;border-color:#4ade8055}
+.scard.c{background:#0c4a6e30;border-color:#22d3ee55}
+.scard.p{background:#1e1b4b30;border-color:#818cf855}
+.scard.o{background:#78350f30;border-color:#fb923c55}
+.scard-icon{font-size:30px}.scard-lbl{font-size:11px;font-weight:700;margin-top:4px}
+.scard-val{font-size:10px;color:#475569;font-family:monospace}
+.scard.g .scard-lbl{color:var(--green)}.scard.c .scard-lbl{color:var(--cyan)}
+.scard.p .scard-lbl{color:var(--purple)}.scard.o .scard-lbl{color:var(--orange)}
+
+/* ================================================================ INTRO CHIPS */
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:620px;margin-top:26px}
+.chip{padding:8px 15px;border:1px solid #ffffff18;border-radius:20px;font-size:12px;color:#94a3b8;opacity:0;animation:popin .5s cubic-bezier(.34,1.56,.64,1) forwards}
+
+/* ================================================================
+   DOCKER SCENE  ← THE STAR OF THE SHOW
+   ================================================================ */
+.docker-stage{
+  display:flex;align-items:center;justify-content:center;
+  gap:30px;width:100%;max-width:1060px;padding:10px 20px;
+  flex-wrap:wrap;
+}
+
+/* ── Dockerfile card ── */
+.df-card{
+  background:#080f1e;border:1.5px solid #334155;border-radius:14px;
+  overflow:hidden;min-width:230px;max-width:270px;
+  box-shadow:0 0 40px #22d3ee1a;
+  transform:translateX(-60px);opacity:0;
+  transition:transform .6s cubic-bezier(.34,1.1,.64,1),opacity .6s ease;
+}
+.df-card.slide-in{transform:translateX(0);opacity:1}
+.df-card-header{
+  background:#0d1b2e;border-bottom:1px solid #1e293b;
+  padding:10px 14px;display:flex;align-items:center;gap:8px;
+}
+.df-title{font-size:12px;font-weight:700;color:#94a3b8;font-family:monospace}
+.df-lines{padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+.df-line{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border-radius:7px;font-family:monospace;font-size:11px;
+  border:1px solid transparent;cursor:default;
+  transition:background .3s,border-color .3s;
+  position:relative;overflow:hidden;
+}
+.df-line::after{/* scan line highlight */
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  transform:translateX(-100%);
+  transition:transform 0s;
+}
+.df-line.active{background:#22d3ee18;border-color:#22d3ee55}
+.df-line.active::after{transform:translateX(100%);transition:transform .5s ease}
+.df-line.done{background:#4ade8010;border-color:#4ade8030}
+.df-kw{font-weight:900;min-width:48px;display:inline-block}
+.df-num{font-size:9px;color:#334155;min-width:14px;text-align:right;flex-shrink:0}
+/* Colors per keyword */
+.kw-FROM{color:#818cf8}.kw-WORKDIR{color:#22d3ee}.kw-COPY{color:#4ade80}
+.kw-RUN{color:#fb923c}.kw-EXPOSE{color:#60a5fa}.kw-CMD{color:#a78bfa}
+.df-rest{color:#94a3b8}
+
+/* ── Build arrow center ── */
+.build-center{
+  display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;
+}
+.bc-label{font-size:10px;color:#475569;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.bc-arrow{
+  font-size:28px;color:#22d3ee;
+  animation:arrowPulse 1s ease-in-out infinite;
+}
+@keyframes arrowPulse{50%{transform:translateX(5px);opacity:.6}}
+.bc-cmd{font-family:monospace;font-size:11px;color:#4ade80;background:#0a1628;padding:4px 10px;border-radius:6px;border:1px solid #22d3ee22}
+
+/* ── Container assembly ── */
+.casm{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  min-width:240px;position:relative;
+}
+.casm-title{font-size:10px;color:#475569;font-weight:700;letter-spacing:2px;margin-bottom:4px}
+
+/* The box shell */
+.cbox-shell{
+  position:relative;width:230px;
+  /* 3d perspective */
+  perspective:600px;
+}
+/* layer stack grows inside */
+.cstack{
+  display:flex;flex-direction:column;width:230px;gap:3px;
+  transform:perspective(600px) rotateX(10deg) rotateY(-5deg);
+  transform-style:preserve-3d;
+  transition:transform .5s ease;
+}
+.cstack.sealed{
+  transform:perspective(600px) rotateX(10deg) rotateY(-5deg) scale(.97);
+}
+
+/* Individual container layer */
+.clayer{
+  width:230px;height:34px;border-radius:6px;
+  display:flex;align-items:center;padding:0 12px;gap:9px;
+  font-family:monospace;font-size:11px;font-weight:700;
+  border:1px solid;position:relative;overflow:hidden;
+  /* drop-in animation */
+  animation:layerLand .45s cubic-bezier(.34,1.56,.64,1) both;
+}
+.clayer::after{/* right side depth */
+  content:'';position:absolute;right:0;top:0;bottom:0;width:6px;
+  background:rgba(0,0,0,.35);border-radius:0 6px 6px 0;
+}
+.clayer::before{/* top highlight */
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:rgba(255,255,255,.12);
+}
+@keyframes layerLand{
+  from{opacity:0;transform:translateY(-30px) scaleX(.7)}
+  to{opacity:1;transform:translateY(0) scaleX(1)}
+}
+/* layer colors */
+.cl-FROM{background:#1e1b4b;border-color:#818cf866;color:#a5b4fc}
+.cl-WORKDIR{background:#0c4a6e;border-color:#22d3ee55;color:#67e8f9}
+.cl-COPY{background:#052e16;border-color:#4ade8055;color:#86efac}
+.cl-RUN{background:#422006;border-color:#fb923c66;color:#fdba74;height:42px}/* thicker = bigger layer */
+.cl-EXPOSE{background:#0f2d4a;border-color:#60a5fa55;color:#93c5fd}
+.cl-CMD{background:#2d1b69;border-color:#a78bfa66;color:#c4b5fd}
+
+/* Container lid */
+.cbox-lid{
+  width:238px;height:16px;
+  background:linear-gradient(to bottom,#334155,#1e293b);
+  border-radius:10px 10px 4px 4px;
+  border:2px solid #22d3ee;border-bottom:0;
+  box-shadow:0 -4px 24px #22d3ee55;
+  opacity:0;
+  transform:translateY(-18px) perspective(600px) rotateX(10deg) rotateY(-5deg);
+  transition:opacity .5s,transform .5s cubic-bezier(.34,1.1,.64,1);
+  position:relative;
+}
+.cbox-lid.closed{
+  opacity:1;
+  transform:translateY(0) perspective(600px) rotateX(10deg) rotateY(-5deg);
+}
+.cbox-lid::after{/* lid shine */
+  content:'';position:absolute;top:4px;left:20%;right:20%;height:3px;
+  background:rgba(255,255,255,.18);border-radius:2px;
+}
+
+/* Container box bottom */
+.cbox-bottom{
+  width:238px;height:12px;
+  background:linear-gradient(to top,#1e293b,#334155);
+  border-radius:4px 4px 10px 10px;
+  border:2px solid #334155;border-top:0;
+  transform:perspective(600px) rotateX(10deg) rotateY(-5deg);
+}
+
+/* Sealed label */
+.cbox-label{
+  display:flex;align-items:center;gap:8px;
+  background:#14532d44;border:1.5px solid #4ade8066;
+  border-radius:10px;padding:9px 14px;
+  opacity:0;transform:translateY(10px) scale(.9);
+  transition:opacity .5s,transform .5s cubic-bezier(.34,1.4,.64,1);
+  font-family:monospace;font-size:12px;font-weight:700;color:var(--green);
+  margin-top:4px;
+}
+.cbox-label.show{opacity:1;transform:translateY(0) scale(1)}
+
+/* Container ghost outline (empty state) */
+.cbox-ghost{
+  width:230px;height:60px;
+  border:2px dashed #334155;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:#1e293b;font-size:12px;font-weight:700;letter-spacing:1px;
+  transition:opacity .3s;
+}
+.cbox-ghost.hidden{opacity:0;pointer-events:none}
+
+/* Flying slab (JS-managed, fixed position) */
+.fly-slab{
+  position:fixed;z-index:9999;pointer-events:none;
+  display:flex;align-items:center;padding:0 12px;gap:8px;
+  font-family:monospace;font-size:11px;font-weight:700;border-radius:6px;
+  border:1px solid;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+
+/* ================================================================ HUD */
+.hud{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:10px 24px 18px;background:linear-gradient(to top,#04091aff 0%,#04091acc 55%,transparent 100%)}
+.hud-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.hud-step{font-size:12px;color:#475569}
+.hud-step em{color:var(--cyan);font-style:normal;font-weight:700}
+.hbtns{display:flex;gap:8px}
+.hbtn{background:#ffffff0d;border:1px solid #ffffff18;color:#cbd5e1;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.hbtn:hover{background:#ffffff18;border-color:var(--cyan);color:#fff}
+.hbtn:disabled{opacity:.35;cursor:default}
+.hbtn.prime{background:linear-gradient(90deg,var(--cyan),var(--purple));color:#040913;border:0;font-weight:800}
+.ptrack{height:4px;background:#ffffff0e;border-radius:10px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--green));border-radius:10px;transition:width .6s ease;width:0}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.d{width:6px;height:6px;border-radius:50%;background:#ffffff18;transition:all .3s;cursor:pointer}
+.d.on{background:var(--cyan);transform:scale(1.5)}.d.done{background:var(--green)}
+
+/* ================================================================ REGISTRY */
+.registry{background:#0d1b2e;border:1px solid #334155;border-radius:11px;padding:14px;min-width:240px}
+.ri{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;font-family:monospace;font-size:11px;opacity:0;animation:linein .4s forwards}
+.ri.old{background:#ffffff05;border:1px solid #ffffff12;color:#475569}
+.ri.new{background:#22d3ee18;border:1px solid #22d3ee44;color:var(--cyan)}
+
+/* ================================================================ RESPONSIVE */
+@media(max-width:760px){
+  .docker-stage{flex-direction:column;gap:16px}
+  .df-card{max-width:100%}
+  .build-center{flex-direction:row;gap:12px}
+  .bc-arrow{transform:rotate(90deg)}
+  .row{flex-direction:column;gap:22px}
+  .parr{display:none}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="grid-floor"></div>
+<div class="stage">
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 0 · INTRO
+     ════════════════════════════════════════════════════════ -->
+<section class="scene active" id="s0">
+  <div class="eyebrow">CI/CD — END-TO-END CINEMATIC JOURNEY</div>
+  <div style="text-align:center;padding:20px">
+    <div style="font-size:clamp(38px,6vw,76px);font-weight:900;line-height:1.1">
+      <span class="grad">Code&nbsp;to&nbsp;Cloud</span>
+    </div>
+    <div style="font-size:clamp(14px,2vw,18px);color:#475569;margin-top:10px">
+      The complete CI/CD story — from keyboard to production
+    </div>
+    <div class="chips">
+      <div class="chip" style="animation-delay:.05s">💻 Write Code</div>
+      <div class="chip" style="animation-delay:.15s">📝 Git Commit</div>
+      <div class="chip" style="animation-delay:.25s">🐙 Push to GitHub</div>
+      <div class="chip" style="animation-delay:.35s">⚙️ Actions Triggered</div>
+      <div class="chip" style="animation-delay:.45s">🧪 Run Tests</div>
+      <div class="chip" style="animation-delay:.55s">🐳 Docker Build</div>
+      <div class="chip" style="animation-delay:.65s">📦 Push Image</div>
+      <div class="chip" style="animation-delay:.75s">☁️ Deploy to AWS</div>
+      <div class="chip" style="animation-delay:.85s">❤️ Go Live!</div>
+    </div>
+    <div style="margin-top:22px;font-size:12px;color:#2d3f52">▶ Auto-plays · Arrow keys or buttons to navigate</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 1 · DEVELOPER WRITES CODE
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s1">
+  <div class="eyebrow">STAGE 1 — DEVELOPER WRITES CODE</div>
+  <div class="row">
+    <div class="col">
+      <div class="typing">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+          <div class="a-head"><div class="a-eyes">👀</div><div class="a-smile"></div></div>
+          <div class="a-body"><div class="a-arm l"></div><div class="a-arm r"></div></div>
+          <div class="a-legs"><div class="a-leg"></div><div class="a-leg"></div></div>
+        </div>
+      </div>
+      <div class="float" style="display:flex;flex-direction:column;align-items:center">
+        <div class="laptop-screen">
+          <div class="cl c f"></div><div class="cl p m"></div><div class="cl g s"></div>
+          <div class="cl c m"></div><div class="cl p s"></div>
+          <div style="margin-top:4px"><span class="cursor"></span></div>
+        </div>
+        <div class="laptop-base"></div>
+      </div>
+      <div class="badge b-c">🎯 Feature: Stripe Payment Integration</div>
+    </div>
+    <div class="stext">
+      <h2>Developer <span class="grad">writes code</span></h2>
+      <p class="lead">Sarah is a backend engineer adding a new Stripe payment integration. She's writing Python in her local dev environment with hot-reload.</p>
+      <div class="cmd-pill">$ python app.py --dev</div>
+      <div class="term" style="margin-top:16px;max-width:310px">
+        <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span class="tname">app.py</span></div>
+        <div class="tbody">
+          <div class="tl" style="color:#818cf8;animation-delay:.5s">def process_payment(amount):</div>
+          <div class="tl out" style="color:#22d3ee;animation-delay:.9s">resp = stripe.charge(amount)</div>
+          <div class="tl out" style="color:#4ade80;animation-delay:1.3s">return resp.status == 'ok'</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 2 · GIT COMMIT & PUSH
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s2">
+  <div class="eyebrow">STAGE 2 — GIT COMMIT & PUSH</div>
+  <div class="row">
+    <div class="col">
+      <div style="font-size:68px" class="float">🌿</div>
+      <div class="term" style="width:340px">
+        <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span class="tname">Terminal</span></div>
+        <div class="tbody">
+          <div class="tl cmd" style="animation-delay:.2s">$ git add .</div>
+          <div class="tl dim" style="animation-delay:.6s">Staged: app.py, test_payment.py</div>
+          <div class="tl cmd" style="animation-delay:1.1s">$ git commit -m "feat: add stripe payment"</div>
+          <div class="tl ok"  style="animation-delay:1.8s">✓ [main abc1234] feat: add stripe payment</div>
+          <div class="tl dim" style="animation-delay:2.1s">&nbsp; 2 files changed, 48 insertions(+)</div>
+          <div class="tl cmd" style="animation-delay:2.6s">$ git push origin main</div>
+          <div class="tl info" style="animation-delay:3.2s">Enumerating objects: 5, done.</div>
+          <div class="tl ok"  style="animation-delay:3.7s">✓ main → origin/main</div>
+        </div>
+      </div>
+    </div>
+    <div class="stext">
+      <h2><span class="grad">Git Commit</span> & Push</h2>
+      <p class="lead">Sarah stages her changes, writes a descriptive commit message in <strong>Conventional Commits</strong> format, then pushes to the <strong>main</strong> branch.</p>
+      <p class="lead" style="margin-top:12px">This push event is the <strong>trigger</strong> that starts the entire automated pipeline — no manual action needed.</p>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <div class="badge b-g">✓ 2 files changed</div>
+        <div class="badge b-c">→ Branch: main</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 3 · GITHUB ACTIONS TRIGGERED
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s3">
+  <div class="eyebrow">STAGE 3 — GITHUB ACTIONS TRIGGERED</div>
+  <div class="row">
+    <div class="col">
+      <div style="width:88px;height:88px;border-radius:50%;background:#1a1f2e;display:flex;align-items:center;justify-content:center;font-size:50px;border:3px solid #22d3ee;box-shadow:0 0 40px #22d3ee55;animation:ipulse 1.2s ease-in-out infinite">🐙</div>
+      <div class="badge b-c">⚡ Webhook received — push to main</div>
+      <div class="term" style="width:330px">
+        <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span class="tname">.github/workflows/ci.yml</span></div>
+        <div class="tbody">
+          <div class="tl" style="color:#818cf8;animation-delay:.3s">on:</div>
+          <div class="tl" style="padding-left:14px;color:#22d3ee;animation-delay:.6s">push:</div>
+          <div class="tl" style="padding-left:28px;color:#94a3b8;animation-delay:.9s">branches: [main]</div>
+          <div class="tl" style="color:#818cf8;animation-delay:1.2s">jobs:</div>
+          <div class="tl" style="padding-left:14px;color:#4ade80;animation-delay:1.5s">ci-pipeline:</div>
+          <div class="tl" style="padding-left:28px;color:#94a3b8;animation-delay:1.8s">runs-on: ubuntu-latest</div>
+          <div class="tl info" style="animation-delay:2.3s">▶ Workflow queued...</div>
+          <div class="tl ok"  style="animation-delay:2.9s">✓ Runner assigned — ubuntu-22.04</div>
+        </div>
+      </div>
+    </div>
+    <div class="stext">
+      <h2>GitHub <span class="grad">Actions Triggered</span></h2>
+      <p class="lead">GitHub receives the push event and fires a webhook. The <code style="color:var(--cyan)">ci.yml</code> workflow in <code style="color:var(--cyan)">.github/workflows/</code> activates automatically.</p>
+      <p class="lead" style="margin-top:12px">A fresh <strong>Ubuntu 22.04 runner</strong> is provisioned in GitHub's cloud — a clean, isolated environment every single run.</p>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <div class="badge b-g">✓ Workflow triggered</div>
+        <div class="badge b-c">🏃 ubuntu-latest</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 4 · TESTS
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s4">
+  <div class="eyebrow">STAGE 4 — CHECKOUT & RUN TESTS</div>
+  <div class="row">
+    <div class="col">
+      <div class="test-list">
+        <div style="font-size:12px;color:#475569;font-weight:700;padding:0 4px;margin-bottom:2px">📋 pytest & security audit</div>
+        <div class="ti" style="animation-delay:.4s"><span class="ts">✓</span>test_charge_success</div>
+        <div class="ti" style="animation-delay:.8s"><span class="ts">✓</span>test_invalid_card_declined</div>
+        <div class="ti" style="animation-delay:1.2s"><span class="ts">✓</span>test_refund_processed</div>
+        <div class="ti" style="animation-delay:1.6s"><span class="ts">✓</span>bandit: 0 AST security flaws</div>
+        <div class="ti" style="animation-delay:2.0s"><span class="ts">✓</span>pip-audit: 0 CVEs detected</div>
+        <div class="ti" style="animation-delay:2.4s"><span class="ts">✓</span>coverage: 94.6% (>90% gate)</div>
+      </div>
+      <div class="badge b-g" style="margin-top:8px;opacity:0;animation:linein .4s 3s forwards">🎉 Quality & Security Gates Passed (100%)</div>
+    </div>
+    <div class="stext">
+      <h2>Automated <span class="grad">Testing & SAST</span></h2>
+      <p class="lead">The runner checks out the commit and restores cached wheels. <strong>pytest</strong> executes unit tests while <strong>Bandit</strong> and <strong>pip-audit</strong> analyze source ASTs and package CVEs.</p>
+      <p class="lead" style="margin-top:12px">If even <em>one</em> test fails or an unpatched CVE is identified, the pipeline terminates immediately — halting vulnerabilities before deployment.</p>
+      <div class="term" style="margin-top:16px;max-width:300px">
+        <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <div class="tbody">
+          <div class="tl cmd" style="animation-delay:.1s">$ actions/checkout@v4</div>
+          <div class="tl cmd" style="animation-delay:.5s">$ bandit -r ./app -ll</div>
+          <div class="tl ok"  style="animation-delay:.8s">✓ 0 high/critical issues</div>
+          <div class="tl cmd" style="animation-delay:1.1s">$ pip-audit -r requirements.txt</div>
+          <div class="tl ok"  style="animation-delay:1.4s">✓ 26 packages clean</div>
+          <div class="tl cmd" style="animation-delay:1.7s">$ pytest -n auto --cov=app</div>
+          <div class="tl ok"  style="animation-delay:2.6s">✓ 64 passed, 94.6% cov</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 5 · DOCKER BUILD  ← REDESIGNED
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s5">
+  <div class="eyebrow">STAGE 5 — DOCKER IMAGE BUILD</div>
+
+  <div class="docker-stage">
+
+    <!-- LEFT: Dockerfile blueprint -->
+    <div class="df-card" id="df-card">
+      <div class="df-card-header">
+        <span style="font-size:16px">📄</span>
+        <span class="df-title">Dockerfile</span>
+      </div>
+      <div class="df-lines">
+        <div class="df-line" id="df0"><span class="df-num">1</span><span class="df-kw kw-FROM">FROM</span><span class="df-rest">python:3.12-slim</span></div>
+        <div class="df-line" id="df1"><span class="df-num">2</span><span class="df-kw kw-WORKDIR">WORKDIR</span><span class="df-rest">/app</span></div>
+        <div class="df-line" id="df2"><span class="df-num">3</span><span class="df-kw kw-COPY">COPY</span><span class="df-rest">requirements.txt .</span></div>
+        <div class="df-line" id="df3"><span class="df-num">4</span><span class="df-kw kw-RUN">RUN</span><span class="df-rest">pip install -r requirements.txt</span></div>
+        <div class="df-line" id="df4"><span class="df-num">5</span><span class="df-kw kw-COPY">COPY</span><span class="df-rest">. .</span></div>
+        <div class="df-line" id="df5"><span class="df-num">6</span><span class="df-kw kw-EXPOSE">EXPOSE</span><span class="df-rest">5000</span></div>
+        <div class="df-line" id="df6"><span class="df-num">7</span><span class="df-kw kw-CMD">CMD</span><span class="df-rest">["python","app.py"]</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER: Arrow -->
+    <div class="build-center">
+      <div class="bc-label">docker build</div>
+      <div class="bc-arrow">→</div>
+      <div class="bc-cmd">app:abc1234</div>
+    </div>
+
+    <!-- RIGHT: Container being assembled -->
+    <div class="casm">
+      <div class="casm-title">CONTAINER IMAGE</div>
+
+      <!-- Lid (appears last, slides down) -->
+      <div class="cbox-lid" id="cbox-lid"></div>
+
+      <!-- Ghost placeholder (before any layers) -->
+      <div class="cbox-ghost" id="cbox-ghost">EMPTY</div>
+
+      <!-- Layer stack -->
+      <div class="cstack" id="cstack"></div>
+
+      <!-- Bottom of box -->
+      <div class="cbox-bottom"></div>
+
+      <!-- Sealed label -->
+      <div class="cbox-label" id="cbox-label">
+        <span style="font-size:18px">🐳</span>
+        <div>
+          <div style="font-size:11px;font-weight:900">app:abc1234</div>
+          <div style="font-size:9px;color:#4ade8099;font-weight:400">127 MB · 7 layers · READY</div>
+        </div>
+        <span style="font-size:16px;margin-left:4px">✅</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 6 · PUSH TO REGISTRY
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s6">
+  <div class="eyebrow">STAGE 6 — SCAN, SIGN & PUSH TO REGISTRY</div>
+  <div class="row">
+    <div class="col">
+      <div style="font-size:54px" class="float">📦</div>
+      <div class="registry">
+        <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:8px">🗄️ Amazon ECR — 123456.dkr.ecr.aws/myapp</div>
+        <div class="ri old" style="animation-delay:.2s"><span>📦</span> app:a1b2c3d<span style="margin-left:auto;font-size:10px">3d ago</span></div>
+        <div class="ri old" style="animation-delay:.5s"><span>📦</span> app:e4f5g6h<span style="margin-left:auto;font-size:10px">7d ago</span></div>
+        <div class="ri new" style="animation-delay:1.8s"><span>🔐</span> app:abc1234.sig<span style="margin-left:auto;font-size:10px;color:#4ade80">Cosign Signed</span></div>
+      </div>
+      <div class="badge b-c" style="margin-top:6px;opacity:0;animation:linein .4s 2.4s forwards">🛡️ Trivy 0 High/Crit CVEs · Cosign Signed</div>
+    </div>
+    <div class="stext">
+      <h2>Scan, Sign & <span class="grad">Push Image</span></h2>
+      <p class="lead">Before pushing to <strong>Amazon ECR</strong>, <strong>Trivy</strong> scans the container OS layers for zero-day vulnerabilities. <strong>Cosign</strong> then cryptographically signs the image digest using GitHub OIDC tokens.</p>
+      <p class="lead" style="margin-top:12px">Tag immutability and KMS encryption guarantee that production artifacts cannot be altered or poisoned.</p>
+      <div class="term" style="margin-top:16px;max-width:300px">
+        <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <div class="tbody">
+          <div class="tl cmd" style="animation-delay:.1s">$ trivy image --severity HIGH,CRIT ...</div>
+          <div class="tl ok"  style="animation-delay:.4s">✓ 0 CVEs found</div>
+          <div class="tl cmd" style="animation-delay:.7s">$ cosign sign --yes ecr.aws/myapp@sha256...</div>
+          <div class="tl ok"  style="animation-delay:1.2s">✓ Rekor log entry: #28941092</div>
+          <div class="tl cmd" style="animation-delay:1.5s">$ docker push 123.dkr.ecr.aws/myapp:abc1234</div>
+          <div class="tl ok"  style="animation-delay:2.2s">✓ Published to ECR (Immutable)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 7 · DEPLOY TO AWS
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s7">
+  <div class="eyebrow">STAGE 7 — CANARY ROLLOUT & ALB HEALTH CHECKS</div>
+  <div class="row">
+    <div class="col">
+      <div class="cloud">
+        <div class="cloud-top">
+          <div class="cbubble cb1"></div><div class="cbubble cb2"></div><div class="cbubble cb3"></div>
+        </div>
+        <div class="cloud-body">☁️ AWS ECS & ALB</div>
+      </div>
+      <div class="ecs-row">
+        <div class="ecs-t" id="et1"><div class="led"></div><div style="color:#475569">Blue v1</div><div style="color:#94a3b8;font-family:monospace;font-size:8px">drained</div></div>
+        <div class="ecs-t" id="et2"><div class="led"></div><div style="color:#475569">Green v2</div><div style="color:var(--cyan);font-family:monospace;font-size:8px">canary 10%</div></div>
+        <div class="ecs-t" id="et3"><div class="led"></div><div style="color:#475569">Green v2</div><div style="color:var(--cyan);font-family:monospace;font-size:8px">live 100%</div></div>
+      </div>
+      <div class="badge b-c" id="alb-badge" style="opacity:0;animation:linein .4s 3.5s forwards">⚖️ ALB Canary: 10% ➔ 50% ➔ 100% (p99 38ms)</div>
+    </div>
+    <div class="stext">
+      <h2>Canary Deploy & <span class="grad">Zero Downtime</span></h2>
+      <p class="lead">Database migrations execute first via <strong>Alembic</strong>. The <strong>Application Load Balancer</strong> then routes a 10% canary traffic slice to the new green tasks while synthetic monitoring checks HTTP 5xx error budgets.</p>
+      <p class="lead" style="margin-top:12px">With healthy SLOs confirmed, traffic shifts to 100% and old blue containers are drained cleanly. <strong>Zero downtime, zero customer impact.</strong></p>
+      <div class="term" style="margin-top:16px;max-width:300px">
+        <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <div class="tbody">
+          <div class="tl cmd" style="animation-delay:.1s">$ alembic upgrade head</div>
+          <div class="tl ok"  style="animation-delay:.4s">✓ DB schema synchronized</div>
+          <div class="tl cmd" style="animation-delay:.7s">$ aws elbv2 set-weights --green 10%</div>
+          <div class="tl dim" style="animation-delay:1.2s">Monitoring p99 latency: 38ms...</div>
+          <div class="tl cmd" style="animation-delay:1.8s">$ aws elbv2 set-weights --green 100%</div>
+          <div class="tl ok"  style="animation-delay:2.6s">✓ 100% Live — 0 downtime rollback safe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SCENE 8 · LIVE!
+     ════════════════════════════════════════════════════════ -->
+<section class="scene" id="s8">
+  <div class="eyebrow">STAGE 8 — LIVE IN PRODUCTION 🎉</div>
+  <div id="cf-box" style="position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden"></div>
+  <div style="text-align:center;padding:20px;width:100%;max-width:900px">
+    <div style="font-size:72px;animation:celebrate .7s ease-in-out infinite">🎉</div>
+    <h2 style="font-size:clamp(28px,5vw,52px);font-weight:900;margin-top:12px">
+      <span class="grad">Deployment Successful!</span>
+    </h2>
+    <div class="lead" style="margin-top:8px;margin-bottom:22px">Code is live in production — total pipeline: ~3 minutes</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:22px">
+      <div class="scard g"><div class="scard-icon">✅</div><div class="scard-lbl">Health Check</div><div class="scard-val">HTTP 200 OK</div></div>
+      <div class="scard c"><div class="scard-icon">⚡</div><div class="scard-lbl">Response Time</div><div class="scard-val">48ms avg</div></div>
+      <div class="scard p"><div class="scard-icon">🌍</div><div class="scard-lbl">Live URL</div><div class="scard-val">app.example.com</div></div>
+      <div class="scard o"><div class="scard-icon">🕐</div><div class="scard-lbl">Pipeline Time</div><div class="scard-val">~3 minutes</div></div>
+    </div>
+    <div class="prow" id="fp"></div>
+    <div class="term" style="max-width:440px;margin:16px auto 0">
+      <div class="tbar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span class="tname">production</span></div>
+      <div class="tbody">
+        <div class="tl cmd" style="animation-delay:.5s">$ curl -sf https://app.example.com/health</div>
+        <div class="tl ok"  style="animation-delay:1.3s">{"status":"healthy","version":"abc1234"}</div>
+        <div class="tl info" style="animation-delay:2.1s">✓ commit abc1234 is live — pipeline complete</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.stage -->
+
+<!-- ════════════════════ HUD ════════════════════ -->
+<div class="hud">
+  <div class="hud-top">
+    <div class="hud-step">Scene <em id="hc">1</em> of <em id="ht">9</em> — <span id="htitle" style="color:#e2e8f0">Introduction</span></div>
+    <div class="hbtns">
+      <button class="hbtn" id="bprev" disabled>← Prev</button>
+      <button class="hbtn" id="bpause">⏸ Pause</button>
+      <button class="hbtn prime" id="bnext">Next →</button>
+    </div>
+  </div>
+  <div class="ptrack"><div class="pfill" id="pfill"></div></div>
+  <div class="dots" id="dotrow"></div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+     ════════════════════════════════════════════ -->
+<script>
+/* ── STARFIELD ─────────────────────────────── */
+(()=>{
+  const cv=document.getElementById('stars'),cx=cv.getContext('2d');
+  let st=[];
+  const resize=()=>{
+    cv.width=innerWidth;cv.height=innerHeight;
+    st=Array.from({length:200},()=>({
+      x:Math.random()*cv.width,y:Math.random()*cv.height,
+      r:Math.random()*1.5+.2,s:Math.random()*.35+.04,o:Math.random()*.7+.25
+    }));
+  };
+  const draw=()=>{
+    cx.clearRect(0,0,cv.width,cv.height);
+    st.forEach(s=>{
+      cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(190,215,255,${s.o})`;cx.fill();
+      s.y+=s.s;if(s.y>cv.height)s.y=0;
+    });
+    requestAnimationFrame(draw);
+  };
+  resize();addEventListener('resize',resize);draw();
+})();
+
+/* ── DOCKER LAYER CONFIG ───────────────────── */
+const DLAYERS=[
+  {id:'df0',kw:'FROM',   rest:'python:3.12-slim',          cls:'cl-FROM',   icon:'🐍'},
+  {id:'df1',kw:'WORKDIR',rest:'/app',                      cls:'cl-WORKDIR',icon:'📂'},
+  {id:'df2',kw:'COPY',   rest:'requirements.txt .',        cls:'cl-COPY',   icon:'📋'},
+  {id:'df3',kw:'RUN',    rest:'pip install -r requirements.txt',cls:'cl-RUN',icon:'⚙️'},
+  {id:'df4',kw:'COPY',   rest:'. .',                       cls:'cl-COPY',   icon:'📁'},
+  {id:'df5',kw:'EXPOSE', rest:'5000',                      cls:'cl-EXPOSE', icon:'🌐'},
+  {id:'df6',kw:'CMD',    rest:'["python","app.py"]',       cls:'cl-CMD',    icon:'▶'},
+];
+
+/* fly-slab colour map */
+const FLY_COLORS={
+  'cl-FROM':  {bg:'#1e1b4b',border:'#818cf8',color:'#a5b4fc'},
+  'cl-WORKDIR':{bg:'#0c4a6e',border:'#22d3ee',color:'#67e8f9'},
+  'cl-COPY':  {bg:'#052e16',border:'#4ade80',color:'#86efac'},
+  'cl-RUN':   {bg:'#422006',border:'#fb923c',color:'#fdba74'},
+  'cl-EXPOSE':{bg:'#0f2d4a',border:'#60a5fa',color:'#93c5fd'},
+  'cl-CMD':   {bg:'#2d1b69',border:'#a78bfa',color:'#c4b5fd'},
+};
+
+let dockerDone=false;
+
+function runDockerAnim(){
+  if(dockerDone)return;
+  dockerDone=true;
+
+  const dfCard=document.getElementById('df-card');
+  const ghost =document.getElementById('cbox-ghost');
+  const cstack=document.getElementById('cstack');
+  const lid   =document.getElementById('cbox-lid');
+  const label =document.getElementById('cbox-label');
+
+  /* Slide in Dockerfile card */
+  setTimeout(()=>dfCard.classList.add('slide-in'),200);
+
+  let delay=900;
+  DLAYERS.forEach((cfg,idx)=>{
+    setTimeout(()=>{
+      const lineEl=document.getElementById(cfg.id);
+      /* 1. highlight the line */
+      lineEl.classList.add('active');
+
+      /* 2. after short pause, fly a slab to the container */
+      setTimeout(()=>{
+        const lineRect=lineEl.getBoundingClientRect();
+        const stackRect=cstack.getBoundingClientRect();
+        const pal=FLY_COLORS[cfg.cls];
+
+        /* hide ghost on first layer */
+        if(idx===0)ghost.classList.add('hidden');
+
+        /* Create flying slab */
+        const fly=document.createElement('div');
+        fly.className='fly-slab';
+        fly.style.cssText=`
+          top:${lineRect.top}px;
+          left:${lineRect.left}px;
+          width:${lineRect.width}px;
+          height:${Math.max(lineRect.height,34)}px;
+          background:${pal.bg};border-color:${pal.border};color:${pal.color};
+        `;
+        fly.innerHTML=`<span style="font-size:14px">${cfg.icon}</span><span style="font-weight:900;min-width:46px">${cfg.kw}</span><span style="color:${pal.color}99">${cfg.rest}</span>`;
+        document.body.appendChild(fly);
+
+        /* Phase 1: slide right to container column */
+        const destLeft=stackRect.left;
+        const destW=stackRect.width||230;
+
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          fly.style.transition='left .35s ease,width .35s ease';
+          fly.style.left=destLeft+'px';
+          fly.style.width=destW+'px';
+        }));
+
+        /* Phase 2: drop down into stack */
+        setTimeout(()=>{
+          /* target Y: top of current stack */
+          const freshRect=cstack.getBoundingClientRect();
+          const targetTop=freshRect.top - 36; /* land just above current top */
+
+          fly.style.transition='top .38s cubic-bezier(.34,1.1,.64,1),opacity .15s .35s';
+          fly.style.top=targetTop+'px';
+
+          /* Phase 3: add real layer, remove fly */
+          setTimeout(()=>{
+            fly.style.opacity='0';
+            setTimeout(()=>{
+              fly.remove();
+              /* Prepend layer to stack (new layers go on top) */
+              const layer=document.createElement('div');
+              layer.className=`clayer ${cfg.cls}`;
+              layer.innerHTML=`<span style="font-size:14px;flex-shrink:0">${cfg.icon}</span><span style="font-weight:900;min-width:48px">${cfg.kw}</span><span style="opacity:.7;font-size:10px">${cfg.rest}</span>`;
+              cstack.prepend(layer);
+
+              /* Bounce the stack */
+              cstack.style.transform='perspective(600px) rotateX(10deg) rotateY(-5deg) translateY(-5px)';
+              setTimeout(()=>cstack.style.transform='perspective(600px) rotateX(10deg) rotateY(-5deg) translateY(0)',200);
+
+              lineEl.classList.remove('active');
+              lineEl.classList.add('done');
+
+              /* Seal after last layer */
+              if(idx===DLAYERS.length-1){
+                setTimeout(sealContainer,600);
+              }
+            },180);
+          },420);
+        },370);
+
+      },320);
+    },delay);
+
+    delay+=1300;
+  });
+}
+
+function sealContainer(){
+  const lid  =document.getElementById('cbox-lid');
+  const label=document.getElementById('cbox-label');
+  const stack=document.getElementById('cstack');
+
+  /* Close lid */
+  lid.classList.add('closed');
+
+  /* Pulse the whole stack */
+  setTimeout(()=>{
+    stack.classList.add('sealed');
+    stack.style.boxShadow='0 0 40px #22d3ee44';
+  },400);
+
+  /* Show label */
+  setTimeout(()=>label.classList.add('show'),800);
+}
+
+/* ── ECS TASKS ─────────────────────────────── */
+function animateTasks(){
+  ['et1','et2','et3'].forEach((id,i)=>{
+    setTimeout(()=>document.getElementById(id)?.classList.add('up'),500+i*800);
+  });
+}
+
+/* ── CONFETTI ───────────────────────────────── */
+function fireConfetti(){
+  const c=document.getElementById('cf-box');
+  if(!c)return;
+  const cols=['#22d3ee','#818cf8','#4ade80','#facc15','#f87171','#fb923c'];
+  for(let i=0;i<90;i++){
+    const p=document.createElement('div');
+    p.className='cf';
+    const dur=2+Math.random()*3,del=Math.random()*2;
+    p.style.cssText=`left:${Math.random()*100}vw;width:${7+Math.random()*9}px;height:${11+Math.random()*11}px;background:${cols[i%cols.length]};border-radius:${Math.random()>.5?'50%':'2px'};transform:rotate(${Math.random()*360}deg);animation:cfall ${dur}s linear ${del}s forwards;`;
+    c.appendChild(p);
+    setTimeout(()=>p.remove(),(dur+del)*1000+200);
+  }
+}
+
+/* ── FINAL PIPELINE (scene 8) ───────────────── */
+const FSTAGES=[
+  {icon:'💻',lbl:'Write'},{icon:'📝',lbl:'Commit'},{icon:'🐙',lbl:'GitHub'},
+  {icon:'⚙️',lbl:'Actions'},{icon:'🧪',lbl:'Tests'},{icon:'🐳',lbl:'Docker'},
+  {icon:'📦',lbl:'Registry'},{icon:'☁️',lbl:'Deploy'},{icon:'❤️',lbl:'Live!'},
+];
+const fp=document.getElementById('fp');
+FSTAGES.forEach((s,i)=>{
+  const n=document.createElement('div');n.className='pnode';
+  n.innerHTML=`<div class="picon done" style="opacity:0;animation:popin .4s ${i*.1}s cubic-bezier(.34,1.56,.64,1) forwards">${s.icon}</div><div class="plbl dn">${s.lbl}</div>`;
+  fp.appendChild(n);
+  if(i<FSTAGES.length-1){const a=document.createElement('div');a.className='parr lit';a.style.animationDelay=i*.1+'s';fp.appendChild(a);}
+});
+
+/* ── SCENE CONTROLLER ───────────────────────── */
+const SCENES=[
+  {id:'s0',title:'Introduction',       dur:5000},
+  {id:'s1',title:'Write Code',         dur:7000},
+  {id:'s2',title:'Git Commit & Push',  dur:8000},
+  {id:'s3',title:'GitHub Actions',     dur:8000},
+  {id:'s4',title:'Run Tests',          dur:7500},
+  {id:'s5',title:'Docker Build',       dur:12000},/* longer for Docker animation */
+  {id:'s6',title:'Push to Registry',   dur:7000},
+  {id:'s7',title:'Deploy to AWS ECS',  dur:8500},
+  {id:'s8',title:'🎉 Live!',           dur:1e9},
+];
+
+let cur=0,paused=false,timer=null;
+const entered={};
+const pfill  =document.getElementById('pfill');
+const hc     =document.getElementById('hc');
+const ht     =document.getElementById('ht');
+const htitle =document.getElementById('htitle');
+const dotrow =document.getElementById('dotrow');
+const bprev  =document.getElementById('bprev');
+const bnext  =document.getElementById('bnext');
+const bpause =document.getElementById('bpause');
+
+ht.textContent=SCENES.length;
+SCENES.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='d';d.addEventListener('click',()=>goTo(i));
+  dotrow.appendChild(d);
+});
+const getDots=()=>[...dotrow.querySelectorAll('.d')];
+
+function onEnter(i){
+  if(entered[i])return;entered[i]=true;
+  if(i===5)setTimeout(runDockerAnim,400);
+  if(i===7)animateTasks();
+  if(i===8)setTimeout(fireConfetti,700);
+}
+
+function goTo(idx){
+  idx=Math.max(0,Math.min(SCENES.length-1,idx));
+  const prevEl=document.getElementById(SCENES[cur].id);
+  if(prevEl){prevEl.classList.remove('active');prevEl.classList.add('exit');setTimeout(()=>prevEl.classList.remove('exit'),600);}
+  cur=idx;
+  setTimeout(()=>{
+    const el=document.getElementById(SCENES[cur].id);
+    if(el)el.classList.add('active');
+    onEnter(cur);
+  },80);
+  pfill.style.width=(cur/(SCENES.length-1)*100)+'%';
+  hc.textContent=cur+1;htitle.textContent=SCENES[cur].title;
+  getDots().forEach((d,i)=>{
+    d.classList.remove('on','done');
+    if(i===cur)d.classList.add('on');else if(i<cur)d.classList.add('done');
+  });
+  clearTimeout(timer);
+  if(!paused&&SCENES[cur].dur<1e8)timer=setTimeout(()=>goTo(cur+1),SCENES[cur].dur);
+  bprev.disabled=cur===0;bnext.disabled=cur===SCENES.length-1;
+}
+
+bnext .addEventListener('click',()=>goTo(cur+1));
+bprev .addEventListener('click',()=>goTo(cur-1));
+bpause.addEventListener('click',()=>{
+  paused=!paused;bpause.textContent=paused?'▶ Play':'⏸ Pause';
+  if(!paused&&SCENES[cur].dur<1e8)timer=setTimeout(()=>goTo(cur+1),2500);
+  else clearTimeout(timer);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();goTo(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1);}
+  if(e.key.toLowerCase()==='p')bpause.click();
+});
+
+goTo(0);
+</script>
+</body>
+</html>

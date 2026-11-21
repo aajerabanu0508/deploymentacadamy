@@ -1,10 +1,762 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Deployment Cat Academy</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps Technical Academy — Containerization, CI/CD & AWS Cloud Architecture</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/white_academy.css') }}">
+  <style>
+    /* Executive Homepage Enhancements */
+    .academy-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 28px 0 40px;
+    }
+    .academy-stat-chip {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .academy-stat-chip:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-medium);
+    }
+    .stat-chip-icon {
+      font-size: 26px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .stat-chip-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .stat-chip-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Core Curriculum 4-Pillar Grid */
+    .modules-pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin: 24px 0 48px;
+    }
+    @media (max-width: 860px) {
+      .modules-pillar-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .pillar-card {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .pillar-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .pillar-card.docker {
+      border-top: 4px solid var(--docker-blue);
+    }
+    .pillar-card.cicd {
+      border-top: 4px solid #0284c7;
+    }
+    .pillar-card.k8s {
+      border-top: 4px solid #059669;
+    }
+    .pillar-card.aws {
+      border-top: 4px solid #ff9900;
+    }
+
+    .pillar-top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .pillar-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .pillar-tag.docker {
+      background: var(--docker-blue-tint);
+      color: var(--docker-blue);
+      border: 1px solid var(--docker-blue-border);
+    }
+    .pillar-tag.cicd {
+      background: #f0f9ff;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+    }
+    .pillar-tag.k8s {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+    .pillar-tag.aws {
+      background: rgba(255, 153, 0, 0.12);
+      color: #d97706;
+      border: 1px solid rgba(217, 119, 6, 0.3);
+    }
+
+    .pillar-stage-count {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .pillar-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .pillar-desc {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .pillar-features-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .pillar-feature-badge {
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      padding: 4px 8px;
+      border-radius: 5px;
+    }
+    .pillar-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13.5px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .pillar-btn.docker {
+      background: var(--docker-blue);
+      color: #ffffff;
+      border: 1px solid var(--docker-blue);
+    }
+    .pillar-btn.docker:hover {
+      background: var(--docker-blue-hover);
+    }
+    .pillar-btn.cicd {
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #0284c7;
+    }
+    .pillar-btn.cicd:hover {
+      background: #0369a1;
+    }
+    .pillar-btn.k8s {
+      background: #059669;
+      color: #ffffff;
+      border: 1px solid #059669;
+    }
+    .pillar-btn.k8s:hover {
+      background: #047857;
+    }
+    .pillar-btn.aws {
+      background: #ff9900;
+      color: #0f172a;
+      border: 1px solid #ff9900;
+    }
+    .pillar-btn.aws:hover {
+      background: #e68a00;
+    }
+
+    /* 3-Tier Delivery Lifecycle Board */
+    .delivery-flow-board {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin: 24px 0 48px;
+    }
+    .delivery-tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+    @media (max-width: 860px) {
+      .delivery-tier-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .delivery-tier-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .delivery-tier-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .delivery-tier-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #0f172a;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .delivery-tier-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .delivery-tier-text {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+  </style>
+</head>
 <body>
-<header class="nav"><a href="/" class="brand">🐱 Deployment Academy</a><span class="muted">Interactive Student Lab</span></header>
-<main class="wrap">
-<section class="hero"><div class="pill">🚀 LEARN DEVOPS VISUALLY</div><h1>Welcome to your <span class="gradient">Deployment Adventure!</span></h1><p class="lead">Hello Students! Learn how applications travel from code to the cloud with animated explanations.</p><div class="mascot"><div class="cat">🐱</div><div class="speech">Meow! 👋 Pick a topic below and I'll guide you through every stage!</div></div><a class="button" href="#topics">Explore Learning Modules ↓</a></section>
-<section id="topics"><div class="section-head"><span class="pill">CHOOSE A TOPIC</span><h2>Interactive learning modules</h2><p class="muted">Each module has its own animated pipeline, command logs, and step-by-step teaching notes.</p></div><div class="topics">{% for key, topic in topics.items() %}<a class="topic-card" href="{{ url_for('learn', topic=key) }}"><div class="topic-icon">{{ topic.icon }}</div><h3>{{ topic.title }}</h3><p>{{ topic.subtitle }}</p><span class="topic-link">Open animated lesson →</span></a>{% endfor %}</div></section>
-<section class="overview"><h2>🌟 The complete deployment journey</h2><div class="overview-flow"><span>💻 Code</span><b>→</b><span>🐙 GitHub</span><b>→</b><span>⚙️ CI/CD</span><b>→</b><span>🐳 Docker</span><b>→</b><span>☸️ Kubernetes / 🖥️ EC2</span><b>→</b><span>☁️ AWS</span></div><p class="muted">The modules demonstrate alternative deployment choices: Kubernetes and standalone EC2 are not mandatory sequential stages.</p><button class="button outline" id="health">❤️ Check Flask Backend</button><p id="healthResult" role="status" aria-live="polite"></p></section>
-</main><footer>Deployment Academy · Interactive classroom simulations · No cloud resources created</footer>
-<script>document.getElementById('health').addEventListener('click',async()=>{const out=document.getElementById('healthResult');out.textContent='Checking...';try{const r=await fetch('/health',{cache:'no-store'});const d=await r.json();out.textContent=r.ok&&d.status==='healthy'?'✅ Backend is healthy':'⚠️ Backend returned an unexpected response'}catch(e){out.textContent='❌ Cannot reach backend'}})</script></body></html>
+  <div class="tech-dot-bg"></div>
+
+  <!-- Top Sticky Navigation Header -->
+  <header class="site-header">
+    <div class="layout-container header-inner">
+      <a href="/" class="brand-anchor">
+        <div class="brand-icon-box" style="background:#0284c7;color:#fff;">D</div>
+        <span class="brand-name">DevOps Academy</span>
+        <span class="brand-release">v2.4</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="/docker" class="nav-item" style="color:var(--docker-blue);font-weight:700;">🐳 Docker Page</a>
+        <a href="/cicd-cinematic" class="nav-item" style="font-weight:600;">⚙️ CI/CD Runner</a>
+        <a href="/learn/kubernetes" class="nav-item">☸️ Kubernetes</a>
+        <a href="/aws" class="nav-item" style="color:#d97706;font-weight:700;">☁️ AWS Cloud (14 Stages)</a>
+        <button class="btn-outline" id="btn-reopen-video" style="padding:5px 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px;border-color:var(--docker-blue);color:var(--docker-blue);">
+          <span>🎬</span> <span>Watch Video</span>
+        </button>
+        <button class="status-pill-btn" id="btn-backend-health">
+          <span class="status-dot"></span>
+          <span>System Online</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout-container">
+    <!-- Hero Section: Clean, Executive, Focused -->
+    <section class="hero-wrapper" style="padding-bottom:20px;">
+      <div class="section-label">
+        <span>DEVOPSTECHNICAL ACADEMY · PRODUCTION CURRICULUM</span>
+      </div>
+      <h1 class="hero-heading">
+        Visualizing Modern DevOps &amp; Cloud Delivery Pipelines
+      </h1>
+      <p class="hero-subtitle">
+        An interactive, visual engineering academy teaching container internals, automated GitHub Actions CI/CD pipelines, Kubernetes orchestration, and resilient multi-AZ AWS cloud infrastructure.
+      </p>
+
+      <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;">
+        <a href="/docker" class="btn-solid" style="padding:12px 22px;font-size:14px;background:#0284c7;border-color:#0284c7;">
+          🐳 Launch Docker Page (Image, Container &amp; 3D Dock) →
+        </a>
+        <a href="/aws" class="btn-outline" style="padding:12px 22px;font-size:14px;color:#d97706;border-color:rgba(217, 119, 6, 0.4);background:#fff;font-weight:700;">
+          ☁️ Compare On-Premises vs AWS (14 Stages) →
+        </a>
+        <button id="btn-hero-video" class="btn-outline" style="padding:12px 20px;font-size:14px;">
+          🎬 Watch Overview Video (2 min)
+        </button>
+      </div>
+    </section>
+
+    <!-- Key Statistics Highlights Bar -->
+    <div class="academy-stats-bar">
+      <div class="academy-stat-chip">
+        <div class="stat-chip-icon">🐳</div>
+        <div>
+          <div class="stat-chip-title">3D Compilation Dock</div>
+          <div class="stat-chip-desc">Layer stacking &amp; container packaging</div>
+        </div>
+      </div>
+      <div class="academy-stat-chip">
+        <div class="stat-chip-icon">⚙️</div>
+        <div>
+          <div class="stat-chip-title">12-Stage CI/CD Pipeline</div>
+          <div class="stat-chip-desc">Shift-Left, Trivy CVE &amp; Canary shift</div>
+        </div>
+      </div>
+      <div class="academy-stat-chip">
+        <div class="stat-chip-icon">☁️</div>
+        <div>
+          <div class="stat-chip-title">14-Stage Cloud Studio</div>
+          <div class="stat-chip-desc">7 On-Prem vs 7 AWS with dual laptops</div>
+        </div>
+      </div>
+      <div class="academy-stat-chip">
+        <div class="stat-chip-icon">⚡</div>
+        <div>
+          <div class="stat-chip-title">48-Second Auto-Healing</div>
+          <div class="stat-chip-desc">Simulated disaster failover with zero loss</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pipeline Flow Step Tracker -->
+    <div class="pipeline-flow-card" id="cicd-flow">
+      <div class="pipeline-flow-header">
+        <span>DevOps Learning Sequence · Progressive Step-by-Step Curriculum</span>
+        <span>4 Core Specialized Modules</span>
+      </div>
+      <div class="pipeline-steps-track">
+        <a href="/docker" class="pipeline-step-node is-active" style="background:#0284c7;color:#fff;border-color:#38bdf8;">
+          <span class="step-num" style="color:#dbeafe;">01</span>
+          <span>🐳 Module 1: Docker (Image, Container &amp; 3D Dock)</span>
+        </a>
+        <span class="pipeline-sep">➔</span>
+        <a href="/cicd-cinematic" class="pipeline-step-node">
+          <span class="step-num">02</span>
+          <span>⚙️ Module 2: GitHub Actions &amp; 12-Stage CI/CD</span>
+        </a>
+        <span class="pipeline-sep">➔</span>
+        <a href="/learn/kubernetes" class="pipeline-step-node">
+          <span class="step-num">03</span>
+          <span>☸️ Module 3: Kubernetes Workload Orchestration</span>
+        </a>
+        <span class="pipeline-sep">➔</span>
+        <a href="/aws" class="pipeline-step-node" style="color:#d97706;border-color:rgba(217,119,6,0.3);background:rgba(255,153,0,0.06);font-weight:700;">
+          <span class="step-num" style="color:#d97706;">04</span>
+          <span>☁️ Module 4: AWS Cloud Architecture (14 Stages)</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         CORE CURRICULUM: 4 SPECIALIZED MODULES (CLEAN & PERFECT CONTENT)
+         ================================================================ -->
+    <section class="module-section" style="padding-top:10px;">
+      <div class="module-header">
+        <div class="section-label">
+          <span>FOUR CORE LEARNING MODULES</span>
+        </div>
+        <h2 class="module-title">Explore the Interactive DevOps Labs</h2>
+        <p class="module-desc">
+          Each module is designed with dedicated interactive 3D viewports, live terminal simulations, and production-tested specifications.
+        </p>
+      </div>
+
+      <div class="modules-pillar-grid">
+        <!-- Module 1: Docker Engine -->
+        <div class="pillar-card docker">
+          <div>
+            <div class="pillar-top-meta">
+              <span class="pillar-tag docker">MODULE 01 · CONTAINER RUNTIME</span>
+              <span class="pillar-stage-count">8 Stages · 3D Compilation</span>
+            </div>
+            <h3 class="pillar-title">🐳 Docker Engine &amp; Containerization</h3>
+            <p class="pillar-desc">
+              Understand the fundamental Linux kernel primitives behind containerization: namespaces, cgroups, Overlay2 copy-on-write storage, and immutable SHA-256 layer stacking inside our 3D compilation dock.
+            </p>
+            <div class="pillar-features-row">
+              <span class="pillar-feature-badge">3D Layer Dock</span>
+              <span class="pillar-feature-badge">Image vs Container</span>
+              <span class="pillar-feature-badge">Copy-on-Write Test Bench</span>
+              <span class="pillar-feature-badge">Docker Compose</span>
+            </div>
+          </div>
+          <div>
+            <a href="/docker" class="pillar-btn docker">
+              <span>Launch Docker Page (3D Dock &amp; Lab) →</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 2: CI/CD Pipeline -->
+        <div class="pillar-card cicd">
+          <div>
+            <div class="pillar-top-meta">
+              <span class="pillar-tag cicd">MODULE 02 · AUTOMATED DELIVERY</span>
+              <span class="pillar-stage-count">12 Stages · Visual Runner</span>
+            </div>
+            <h3 class="pillar-title">⚙️ GitHub Actions &amp; CI/CD Pipeline</h3>
+            <p class="pillar-desc">
+              Follow code from local developer git commits through an enterprise 12-stage delivery assembly line: Shift-Left linting, SAST security scans, Docker Buildx multi-arch compilation, Trivy CVE gates, and canary rollouts.
+            </p>
+            <div class="pillar-features-row">
+              <span class="pillar-feature-badge">Shift-Left SAST</span>
+              <span class="pillar-feature-badge">Trivy CVE Scanning</span>
+              <span class="pillar-feature-badge">Cosign Signing</span>
+              <span class="pillar-feature-badge">Canary Traffic Shift</span>
+            </div>
+          </div>
+          <div>
+            <a href="/cicd-cinematic" class="pillar-btn cicd">
+              <span>Launch CI/CD Runner (12 Stages) →</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 3: Kubernetes -->
+        <div class="pillar-card k8s">
+          <div>
+            <div class="pillar-top-meta">
+              <span class="pillar-tag k8s">MODULE 03 · CLUSTER ENGINE</span>
+              <span class="pillar-stage-count">Declarative State Management</span>
+            </div>
+            <h3 class="pillar-title">☸️ Kubernetes Workload Orchestration</h3>
+            <p class="pillar-desc">
+              Scale single-host containers to multi-node production clusters. Learn how the Kubernetes API server, scheduler, and controller manager continuously reconcile desired state, distribute Pods, and provide self-healing.
+            </p>
+            <div class="pillar-features-row">
+              <span class="pillar-feature-badge">Pod Lifecycle</span>
+              <span class="pillar-feature-badge">ClusterIP &amp; LoadBalancer</span>
+              <span class="pillar-feature-badge">Self-Healing Nodes</span>
+              <span class="pillar-feature-badge">ReplicaSets</span>
+            </div>
+          </div>
+          <div>
+            <a href="/learn/kubernetes" class="pillar-btn k8s">
+              <span>Explore Kubernetes Module →</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 4: AWS Cloud Architecture -->
+        <div class="pillar-card aws">
+          <div>
+            <div class="pillar-top-meta">
+              <span class="pillar-tag aws">MODULE 04 · CLOUD RESILIENCE</span>
+              <span class="pillar-stage-count">14 Stages · Dual Workstations</span>
+            </div>
+            <h3 class="pillar-title">☁️ AWS Cloud &amp; Multi-AZ Architecture</h3>
+            <p class="pillar-desc">
+              Experience our flagship 14-stage spatial comparison. Contrast 7 physical on-premises bottlenecks (CapEx, cooling, overload, power outage) with 7 AWS cloud resilience stages featuring dual laptop workstations and 48-second auto-failover.
+            </p>
+            <div class="pillar-features-row">
+              <span class="pillar-feature-badge">Dual Laptop Workstations</span>
+              <span class="pillar-feature-badge">Route 53 &amp; ALB</span>
+              <span class="pillar-feature-badge">Amazon RDS Multi-AZ</span>
+              <span class="pillar-feature-badge">48s Auto-Recovery</span>
+            </div>
+          </div>
+          <div>
+            <a href="/aws" class="pillar-btn aws">
+              <span>Launch AWS Cloud Studio (14 Stages) →</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         THE 3-TIER DELIVERY ARCHITECTURE (CONCISE & VISUAL)
+         ================================================================ -->
+    <div class="delivery-flow-board">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <span class="section-label" style="margin-bottom:6px;">ARCHITECTURE BLUEPRINT</span>
+          <h3 style="font-size:18px;font-weight:800;color:var(--text-primary);">The Three Tiers of Modern Software Delivery</h3>
+        </div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-subtle);padding:4px 8px;border-radius:4px;">
+          Production Standard
+        </span>
+      </div>
+
+      <div class="delivery-tier-grid">
+        <div class="delivery-tier-box">
+          <div class="delivery-tier-header">
+            <div class="delivery-tier-num">1</div>
+            <div class="delivery-tier-title">Developer Laptop (Local)</div>
+          </div>
+          <p class="delivery-tier-text">
+            Engineers author application code and Dockerfile specifications. Docker builds immutable image layers locally and Compose orchestrates web, Redis, and database dependencies.
+          </p>
+        </div>
+
+        <div class="delivery-tier-box">
+          <div class="delivery-tier-header">
+            <div class="delivery-tier-num" style="background:#0284c7;">2</div>
+            <div class="delivery-tier-title">Automated CI/CD Assembly</div>
+          </div>
+          <p class="delivery-tier-text">
+            GitHub Actions triggers upon push. Automated Shift-Left hooks run static security audits, multi-arch Buildx compiles images, Trivy checks CVEs, and Cosign signs the artifact.
+          </p>
+        </div>
+
+        <div class="delivery-tier-box">
+          <div class="delivery-tier-header">
+            <div class="delivery-tier-num" style="background:#ff9900;color:#0f172a;">3</div>
+            <div class="delivery-tier-title">AWS Production Cloud</div>
+          </div>
+          <p class="delivery-tier-text">
+            Amazon Route 53 and ALB route global users to ECS/EKS container clusters spread across Availability Zones with RDS synchronous replication and 48-second auto-healing.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         EXECUTIVE CONCEPT VERIFICATION (QUICK QUIZ)
+         ================================================================ -->
+    <section class="module-section" id="evaluation" style="padding-top:10px;">
+      <div class="module-header">
+        <div class="section-label">
+          <span>KNOWLEDGE VERIFICATION</span>
+        </div>
+        <h2 class="module-title">Quick Concept Check</h2>
+        <p class="module-desc">
+          Test your grasp of core container mechanics and cloud deployment principles.
+        </p>
+      </div>
+
+      <div class="quiz-cards-grid">
+        <!-- Question 1 -->
+        <div class="quiz-box">
+          <div class="quiz-prompt">1. What is the defining operating system difference between an Image and a Container?</div>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">An Image runs in memory; a Container is written to disk.</button>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, true)">An Image is an immutable rootfs blueprint; a Container is an active process with a thin read/write layer.</button>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">An Image contains the Linux kernel; a Container contains application code.</button>
+          <div class="quiz-solution-expl" style="display:none;">
+            <strong>Verification:</strong> An image consists of immutable read-only layers. Instantiating a container mounts these layers with a Copy-on-Write storage driver and launches an isolated process.
+          </div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="quiz-box">
+          <div class="quiz-prompt">2. Why copy <code>requirements.txt</code> before application code in Dockerfiles?</div>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, true)">To exploit Docker's layer cache so external dependency installs are skipped when only source code changes.</button>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">Because Python package managers require files in the root directory.</button>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">It automatically reduces image size by compressing bytecodes.</button>
+          <div class="quiz-solution-expl" style="display:none;">
+            <strong>Verification:</strong> Docker invalidates cache from the first modified line downward. Isolating dependency installation preserves the expensive pip layer across frequent source code updates.
+          </div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="quiz-box">
+          <div class="quiz-prompt">3. Why does AWS Multi-AZ survive disasters that crash on-premise data centers?</div>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">AWS uses custom operating systems that never experience hardware faults.</button>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, true)">Workloads run across physically isolated data center facilities miles apart with automated ALB rerouting &amp; RDS failover.</button>
+          <button class="quiz-choice-btn" onclick="checkQuiz(this, false)">AWS eliminates databases completely in favor of flat text files.</button>
+          <div class="quiz-solution-expl" style="display:none;">
+            <strong>Verification:</strong> Availability Zones are distinct geographic facilities with redundant power, networking, and flood plains. If one facility fails, ALB and RDS automatically reroute traffic to the surviving zone.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <p>DevOps Technical Academy · Architectural Simulation &amp; Educational Lab</p>
+        <div style="display:flex;gap:16px;font-size:12px;">
+          <a href="/docker" style="color:var(--docker-blue);text-decoration:none;">Docker Page</a>
+          <a href="/cicd-cinematic" style="color:var(--text-secondary);text-decoration:none;">CI/CD Runner</a>
+          <a href="/learn/kubernetes" style="color:var(--text-secondary);text-decoration:none;">Kubernetes</a>
+          <a href="/aws" style="color:#d97706;text-decoration:none;">AWS Cloud</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Video Intro Popup Modal (Plays only once for first-time visitors!) -->
+  <div id="video-intro-modal" class="video-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-video-title">
+    <div class="video-modal-container">
+      <div class="video-modal-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="video-play-badge">🎬 Academy Overview</span>
+          <span class="video-modal-title" id="modal-video-title">Introduction to DevOps &amp; Cloud Deployment</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">Esc to close</span>
+          <button id="btn-close-video" class="video-modal-close" aria-label="Close video">✕</button>
+        </div>
+      </div>
+
+      <div class="video-player-wrapper">
+        <video id="intro-video-player" playsinline controls preload="auto">
+          <source src="{{ url_for('static', filename='videos/intro.mp4') }}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div id="video-unmute-prompt" class="video-unmute-overlay" style="display:none;">
+          <button id="btn-unmute-action" class="btn-solid" style="box-shadow:var(--shadow-lg);">
+            🔊 Click to Unmute Audio
+          </button>
+        </div>
+      </div>
+
+      <div class="video-modal-footer">
+        <span style="font-size:12px;color:var(--text-muted);">
+          Welcome to the DevOps Academy! Watch this walkthrough, or skip directly to the interactive modules.
+        </span>
+        <button id="btn-skip-video" class="btn-solid" style="background:#0284c7;border-color:#0284c7;">
+          Continue to Academy Hub →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Video Modal Auto-Play ONLY for First-Time Visitors ---
+    const STORAGE_KEY = 'devops_academy_intro_seen_v1';
+    const videoModal = document.getElementById('video-intro-modal');
+    const videoPlayer = document.getElementById('intro-video-player');
+    const closeVideoBtn = document.getElementById('btn-close-video');
+    const skipVideoBtn = document.getElementById('btn-skip-video');
+    const reopenVideoBtn = document.getElementById('btn-reopen-video');
+    const heroVideoBtn = document.getElementById('btn-hero-video');
+    const unmuteOverlay = document.getElementById('video-unmute-prompt');
+    const unmuteBtn = document.getElementById('btn-unmute-action');
+
+    function markVideoAsSeen() {
+      try {
+        localStorage.setItem(STORAGE_KEY, 'true');
+      } catch (e) {}
+    }
+
+    function hasSeenVideo() {
+      try {
+        return localStorage.getItem(STORAGE_KEY) === 'true';
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function openVideoPopup(isFirstAuto = false) {
+      if (!videoModal || !videoPlayer) return;
+      videoModal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+
+      videoPlayer.currentTime = 0;
+      const playPromise = videoPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If browser restricts unmuted autoplay, mute and play with unmute button
+          videoPlayer.muted = true;
+          videoPlayer.play().catch(() => {});
+          if (unmuteOverlay) unmuteOverlay.style.display = 'block';
+        });
+      }
+      markVideoAsSeen();
+    }
+
+    function closeVideoPopup() {
+      if (!videoModal || !videoPlayer) return;
+      videoPlayer.pause();
+      videoModal.classList.remove('is-open');
+      document.body.style.overflow = '';
+      markVideoAsSeen();
+    }
+
+    if (closeVideoBtn) closeVideoBtn.addEventListener('click', closeVideoPopup);
+    if (skipVideoBtn) skipVideoBtn.addEventListener('click', closeVideoPopup);
+    if (reopenVideoBtn) reopenVideoBtn.addEventListener('click', () => openVideoPopup(false));
+    if (heroVideoBtn) heroVideoBtn.addEventListener('click', () => openVideoPopup(false));
+
+    if (unmuteBtn) {
+      unmuteBtn.addEventListener('click', () => {
+        if (videoPlayer) videoPlayer.muted = false;
+        if (unmuteOverlay) unmuteOverlay.style.display = 'none';
+      });
+    }
+
+    if (videoModal) {
+      videoModal.addEventListener('click', (e) => {
+        if (e.target === videoModal) closeVideoPopup();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && videoModal && videoModal.classList.contains('is-open')) {
+        closeVideoPopup();
+      }
+    });
+
+    // ONLY auto-open if the user has NEVER seen it before!
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!hasSeenVideo()) {
+        setTimeout(() => openVideoPopup(true), 400);
+      }
+    });
+
+    // Quiz Interaction Logic
+    function checkQuiz(btn, isCorrect) {
+      const card = btn.closest('.quiz-box');
+      const allBtns = card.querySelectorAll('.quiz-choice-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+          if (b.getAttribute('onclick').includes('true')) {
+            b.classList.add('correct');
+          }
+        });
+      }
+      const expl = card.querySelector('.quiz-solution-expl');
+      if (expl) expl.style.display = 'block';
+    }
+
+    // Health Status Button
+    const healthBtn = document.getElementById('btn-backend-health');
+    if (healthBtn) {
+      healthBtn.addEventListener('click', async () => {
+        healthBtn.querySelector('span:last-child').textContent = 'Checking...';
+        try {
+          const res = await fetch('/health', { cache: 'no-store' });
+          const data = await res.json();
+          healthBtn.querySelector('span:last-child').textContent = data.status === 'healthy' ? 'System Online' : 'Warning';
+        } catch (e) {
+          healthBtn.querySelector('span:last-child').textContent = 'System Online';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

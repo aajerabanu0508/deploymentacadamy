@@ -57,8 +57,20 @@ TOPICS = {
 def home():
     return render_template('index.html', topics=TOPICS)
 
+@app.get('/docker')
+def docker_page():
+    return render_template('docker.html')
+
+@app.get('/aws')
+def aws_page():
+    return render_template('aws.html')
+
 @app.get('/learn/<topic>')
 def learn(topic):
+    if topic == 'docker':
+        return render_template('docker.html')
+    if topic == 'aws':
+        return render_template('aws.html')
     if topic not in TOPICS:
         abort(404)
     return render_template('topic.html', topic=TOPICS[topic], topic_id=topic)
@@ -67,9 +79,24 @@ def learn(topic):
 def cicd():
     return learn('cicd')
 
+@app.get('/cicd-cinematic')
+def cicd_cinematic():
+    return render_template('cicd_cinematic.html')
+
 @app.get('/health')
 def health():
     return jsonify(status='healthy', application='DevOps Interactive Academy')
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    import os, socket
+    port = int(os.environ.get('PORT', 0))
+    if not port:
+        for p in [5000, 5001, 5002]:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.bind(('127.0.0.1', p))
+                    port = p
+                    break
+            except OSError:
+                continue
+    app.run(host='127.0.0.1', port=port or 5001, debug=True)
