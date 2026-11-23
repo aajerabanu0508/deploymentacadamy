@@ -1,0 +1,84 @@
+name: Deploy Cat Quest to EC2
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cat-quest-ec2
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Deploy and verify
+        shell: bash
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
+          EC2_USER: ${{ vars.EC2_USER || 'ubuntu' }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$EC2_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ||
+                ! "$EC2_USER" =~ ^[a-z_][a-z0-9_-]*$ ||
+                -z "$EC2_SSH_KEY" || -z "$EC2_KNOWN_HOSTS" ]]; then
+            echo "::error::Check EC2_HOST, EC2_USER, EC2_SSH_KEY, and EC2_KNOWN_HOSTS."
+            exit 1
+          fi
+
+          umask 077
+          staging=$(mktemp -d)
+          trap 'rm -rf -- "$staging"' EXIT
+          printf '%s\n' "$EC2_SSH_KEY" > "$staging/key"
+          printf '%s\n' "$EC2_KNOWN_HOSTS" > "$staging/known_hosts"
+          unset EC2_SSH_KEY EC2_KNOWN_HOSTS
+          ssh_options=(-i "$staging/key" -o "UserKnownHostsFile=$staging/known_hosts"
+                       -o StrictHostKeyChecking=yes -o BatchMode=yes -o IdentitiesOnly=yes
+                       -o ConnectTimeout=15)
+          target="$EC2_USER@$EC2_HOST"
+          release_id="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          archive="cat-quest-$release_id.tar.gz"
+          git archive --format=tar.gz --output="$staging/$archive" HEAD:devops_academy
+          scp "${ssh_options[@]}" "$staging/$archive" "$target:$archive"
+
+          ssh "${ssh_options[@]}" "$target" bash -s -- "$release_id" <<'REMOTE'
+          set -euo pipefail
+          umask 027
+          release_id=$1
+          root="$HOME/cat-quest"
+          archive="$HOME/cat-quest-$release_id.tar.gz"
+          release="$root/releases/$release_id"
+          next_link="$root/.current-$release_id"
+          trap 'rm -f -- "$archive" "$next_link"' EXIT
+          mkdir -p "$root/releases" "$root/instance"
+          mkdir "$release"
+          tar -xzf "$archive" -C "$release"
+          ln -s "$root/instance" "$release/instance"
+          python3 -m venv "$release/.venv"
+          "$release/.venv/bin/pip" install -r "$release/requirements.txt"
+          previous=$(readlink "$root/current" || true)
+          ln -s "$release" "$next_link"
+          mv -Tf "$next_link" "$root/current"
+
+          if sudo -n systemctl restart cat-quest.service &&
+             curl --fail --silent --show-error --retry 5 --retry-connrefused --retry-delay 2 --max-time 5 \n               http://127.0.0.1:8000/cat-quest/ > /dev/null; then
+            echo "Cat Quest deployment verified."
+          else
+            if [[ -n "$previous" ]]; then
+              ln -s "$previous" "$next_link"
+              mv -Tf "$next_link" "$root/current"
+              sudo -n systemctl restart cat-quest.service
+            fi
+            echo "Deployment failed. Check the cat-quest service logs." >&2
+            exit 1
+          fi
+          REMOTE

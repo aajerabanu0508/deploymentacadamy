@@ -1,6 +1,8 @@
 from flask import Flask, render_template, jsonify, abort
+from cat_quest import quest
 
 app = Flask(__name__)
+app.register_blueprint(quest)
 TOPICS = {
     'cicd': {'title':'CI/CD', 'subtitle':'Automate testing, packaging and delivery', 'icon':'⚙️', 'modes': {
         'GitHub Actions': [
