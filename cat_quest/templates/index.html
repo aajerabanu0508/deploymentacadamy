@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cat Quest · DevOps Academy</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cat_quest.css') }}">
+  <script defer src="{{ url_for('static', filename='js/cat_quest.js') }}"></script>
+</head>
+<body>
+  <header class="bar">
+    <a href="{{ url_for('home') }}">DevOps Academy</a>
+    <span id="score">Score: 0 · 0 XP</span>
+  </header>
+<main id="quest" data-progress="{{ url_for('cat_quest.progress') }}" data-collect="{{ url_for('cat_quest.collect') }}" data-restart="{{ url_for('cat_quest.restart') }}">
+    <script type="application/json" id="missions">{{ missions | tojson }}</script>
+    <section class="intro" id="opening">
+      <div>
+        <p class="label">THE DEVOPS CAMPAIGN</p>
+        <h1>Cat Quest<span>.</span></h1>
+        <p>Help Pip ship an app. Dodge obstacles and catch all eight DevOps badges to finish the run.</p>
+        <button type="button" id="start" aria-label="Up arrow: start quest">↑</button>
+        <p>Press ↑ to start.</p>
+      </div>
+      <div class="avatar">
+        <svg viewBox="0 0 320 265" role="img" aria-label="Pip, an orange striped cat with long whiskers, based on your drawing">
+          <defs>
+            <g id="cat-half">
+              <path d="M148 104Q121 100 103 61Q77 21 43 17Q49 37 56 62Q65 89 89 87Q69 77 68 48Q94 62 105 87Q120 110 148 104Z"/>
+              <path d="M75 57Q108 83 86 77Z M47 58Q56 88 96 91Q54 108 47 58Z"/>
+              <path d="M143 91Q114 63 133 25Q105 44 118 75Q128 93 143 104Z M148 31Q133 46 145 68Q156 53 148 31Z"/>
+              <path d="M64 102Q87 113 106 104Q140 97 143 151Q134 132 108 133Q78 132 64 102Z"/>
+              <g class="eye">
+                <path fill="#ffe0ab" d="M90 114Q109 103 128 112Q124 129 105 128Q94 127 90 114Z"/>
+                <ellipse fill="#3d1d31" cx="110" cy="116" rx="5" ry="9"/>
+                <circle fill="#fff" cx="112" cy="113" r="2"/>
+              </g>
+              <path d="M65 127Q79 151 117 155Q70 166 65 127Z M83 137Q122 137 136 164Q128 152 112 150Q91 148 83 137Z"/>
+              <path d="M124 171Q55 164 9 222Q47 188 124 176Z M122 178Q65 185 36 221Q78 191 122 183Z M126 183Q82 199 70 224Q107 194 126 188Z"/>
+              <path d="M128 186Q107 210 132 244Q119 210 139 195Z M142 193Q176 226 140 253Q167 248 166 221Q165 204 142 193Z"/>
+            </g>
+          </defs>
+          <circle cx="160" cy="139" r="102" fill="#fbe3ff" opacity=".1"/>
+          <g class="cat"><g id="cat-art" fill="#ff953e">
+            <use href="#cat-half"/>
+            <use href="#cat-half" transform="translate(320 0) scale(-1 1)"/>
+            <path d="M149 73L160 58L171 73L160 99Z M144 155Q151 150 160 155Q169 150 176 155Q175 162 164 169L164 173Q174 182 187 174Q178 191 160 181Q142 191 133 174Q146 182 156 173L156 169Q145 162 144 155Z"/>
+          </g></g>
+        </svg>
+        <span>PIP · YOUR GUIDE</span>
+      </div>
+    </section>
+    <div id="game" hidden>
+    <section aria-labelledby="route-title" class="route">
+      <h2 id="route-title">Mission route</h2>
+      <progress id="meter" value="0" max="{{ missions | length }}" aria-label="Missions completed"></progress>
+      <div class="map-scroll" id="map-scroll" role="region" aria-label="Scrollable mission map" tabindex="0">
+        <div class="map" style="--stops: {{ missions | length + 1 }}">
+          <div class="trail" aria-hidden="true">
+            <div id="traveler"><svg viewBox="0 0 320 265"><use href="#cat-art"/></svg></div>
+          </div>
+          <ol id="route-list">
+            {% for mission in missions %}<li>{{ mission[0] }}</li>{% endfor %}
+            <li>Finish</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+    <section class="runner challenge" id="runner" aria-labelledby="runner-title" hidden>
+      <p class="label">BADGE RUN</p>
+      <h2 id="runner-title" tabindex="-1">Catch the badge</h2>
+      <p id="runner-help">Use Left and Right to switch lanes, Up to jump over crates, and Down to slide under barriers. If all three lanes are blocked, time your jump or slide. Line up with the badge to catch it.</p>
+      <div class="track" aria-hidden="true">
+        <div class="track-grid"></div>
+        <div id="track-items"></div>
+        <svg id="runner-cat" viewBox="0 0 320 265"><use href="#cat-art"/></svg>
+        <div id="badge-burst" hidden></div>
+      </div>
+      <p id="runner-status" role="status"></p>
+      <div class="runner-controls">
+        <button type="button" id="move-left">Move left</button>
+        <button type="button" id="run-action">Run</button>
+        <button type="button" id="move-right">Move right</button>
+        <button type="button" id="jump">Jump</button>
+        <button type="button" id="slide">Slide</button>
+      </div>
+    </section>
+    <section class="challenge" id="challenge" aria-labelledby="mission-title">
+      <p class="label" id="mission-label">MISSION CONTROL</p>
+      <h2 id="mission-title" tabindex="-1">Loading your progress…</h2>
+      <p id="prompt"></p>
+      <button type="button" id="continue" hidden>Retry</button>
+    </section>
+    </div>
+    <dialog id="run-results" aria-labelledby="result-title" aria-describedby="result-detail">
+      <p class="label">RUN RESULTS</p>
+      <h2 id="result-title"></h2>
+      <p class="result-score">Final score <strong id="result-score">0</strong></p>
+      <p id="result-detail"></p>
+      <p id="result-error" role="status"></p>
+      <button type="button" id="restart-run" autofocus>Restart run</button>
+    </dialog>
+    <noscript>Enable JavaScript to play Cat Quest.</noscript>
+  </main>
+</body>
+</html>

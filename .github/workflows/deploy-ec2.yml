@@ -47,7 +47,7 @@ jobs:
           target="$EC2_USER@$EC2_HOST"
           release_id="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           archive="cat-quest-$release_id.tar.gz"
-          git archive --format=tar.gz --output="$staging/$archive" HEAD:devops_academy
+          git archive --format=tar.gz --output="$staging/$archive" HEAD:cat_quest
           scp "${ssh_options[@]}" "$staging/$archive" "$target:$archive"
 
           ssh "${ssh_options[@]}" "$target" bash -s -- "$release_id" <<'REMOTE'
